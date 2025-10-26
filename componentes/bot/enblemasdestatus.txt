@@ -1,0 +1,52 @@
+import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, AlertCircle, CheckCircle2, Circle } from "lucide-react";
+
+const statusConfig = {
+  running: {
+    label: "ONLINE",
+    color: "bg-green-500/20 text-green-400 border-green-500/50",
+    icon: CheckCircle2,
+    iconClass: "text-green-400",
+    dotClass: "bg-green-400 animate-pulse"
+  },
+  stopped: {
+    label: "OFFLINE",
+    color: "bg-gray-500/20 text-gray-400 border-gray-500/50",
+    icon: Circle,
+    iconClass: "text-gray-400",
+    dotClass: "bg-gray-400"
+  },
+  starting: {
+    label: "INICIANDO",
+    color: "bg-blue-500/20 text-blue-400 border-blue-500/50",
+    icon: Loader2,
+    iconClass: "animate-spin text-blue-400",
+    dotClass: "bg-blue-400 animate-pulse"
+  },
+  stopping: {
+    label: "PARANDO",
+    color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/50",
+    icon: Loader2,
+    iconClass: "animate-spin text-yellow-400",
+    dotClass: "bg-yellow-400 animate-pulse"
+  },
+  error: {
+    label: "ERRO",
+    color: "bg-red-500/20 text-red-400 border-red-500/50",
+    icon: AlertCircle,
+    iconClass: "text-red-400 animate-pulse",
+    dotClass: "bg-red-400 animate-pulse"
+  }
+};
+
+export default function StatusBadge({ status }) {
+  const config = statusConfig[status] || statusConfig.stopped;
+
+  return (
+    <Badge variant="outline" className={`${config.color} border-2 flex items-center gap-2 px-4 py-2 font-black tracking-wide text-xs`}>
+      <div className={`w-2.5 h-2.5 rounded-full ${config.dotClass}`} />
+      {config.label}
+    </Badge>
+  );
+}

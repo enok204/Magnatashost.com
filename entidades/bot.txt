@@ -1,0 +1,51 @@
+{
+  "name": "Bot",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome do bot"
+    },
+    "token": {
+      "type": "string",
+      "description": "Token do Discord"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "stopped",
+        "running",
+        "starting",
+        "error",
+        "stopping"
+      ],
+      "default": "stopped",
+      "description": "Status atual do bot"
+    },
+    "zip_file_url": {
+      "type": "string",
+      "description": "URL do arquivo ZIP com o c\u00f3digo"
+    },
+    "logs": {
+      "type": "string",
+      "description": "Logs do bot"
+    },
+    "last_started": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u00daltima vez que o bot foi iniciado"
+    },
+    "uptime_seconds": {
+      "type": "number",
+      "description": "Tempo de execu\u00e7\u00e3o em segundos"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Mensagem de erro caso tenha falhado"
+    }
+  },
+  "required": [
+    "name",
+    "token"
+  ]
+}

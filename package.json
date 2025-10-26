@@ -1,0 +1,20 @@
+{
+  "name": "magnata-host-frontend",
+  "version": "1.0.0",
+  "description": "Frontend para hospedagem de bots Discord",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve -s . -l 3000",
+    "build": "echo 'No build step required'",
+    "deploy": "gh-pages -d ."
+  },
+  "homepage": "https://magnatashost.com",
+  "dependencies": {},
+  "devDependencies": {
+    "gh-pages": "^6.1.1",
+    "serve": "^14.2.1"
+  },
+  "keywords": ["discord", "bots", "hosting", "frontend"],
+  "author": "Magnata Host",
+  "license": "ISC"
+}
