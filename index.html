@@ -47,12 +47,38 @@
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-20px); }
         }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateY(0px) scale(1); }
+            100% { opacity: 0; transform: translateY(-20px) scale(0.8); }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-[#0f0f23] via-[#1a1a2e] to-[#16213e] text-white min-h-screen">
+    <!-- YouTube Background Music Player -->
+    <div id="youtube-player" class="fixed inset-0 w-full h-full opacity-0 pointer-events-none" style="z-index: -1;"></div>
+    <!-- Music Control -->
+    <div id="music-control" class="fixed top-4 left-4 glass p-4 rounded-2xl shadow-2xl z-50 animate-float border border-purple-500/30">
+        <div class="text-left flex items-center gap-3">
+            <div class="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <p id="music-title" class="text-white font-black text-sm">🎵 Jacquees - All On You</p>
+                <p id="music-artist" class="text-purple-300 text-xs font-medium">Ft. Trey Songz [LEGENDA/TRADUÇÃO]</p>
+            </div>
+            <button id="music-toggle" class="bg-gradient-to-r from-red-600 to-red-700 text-white font-bold p-2 rounded-lg hover:from-red-700 hover:to-red-800 transition-all glow">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M6 4h4v12H6V4zM10 4h4v12h-4V4z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
     <div id="root">
         <!-- Loading Screen -->
-        <div class="min-h-screen flex items-center justify-center">
+        <div class="min-h-screen flex items-center justify-center relative">
             <div class="text-center">
                 <div class="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center mx-auto mb-6 animate-float shadow-2xl glow">
                     <svg class="w-10 h-10 text-white animate-spin" fill="none" viewBox="0 0 24 24">
@@ -85,7 +111,130 @@
     <!-- TanStack Query -->
     <script src="https://unpkg.com/@tanstack/react-query@4.29.1/build/umd/index.development.js"></script>
 
+    <!-- YouTube IFrame Player API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <!-- YouTube Player Script -->
+    <script>
+        // YouTube Player
+        let player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('youtube-player', {
+                height: '100%',
+                width: '100%',
+                videoId: 'aToTwqMDlfU',
+                playerVars: {
+                    'autoplay': 1,
+                    'loop': 1,
+                    'playlist': 'aToTwqMDlfU',
+                    'controls': 0,
+                    'showinfo': 0,
+                    'modestbranding': 1,
+                    'rel': 0,
+                    'mute': 0,
+                    'enablejsapi': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // Forçar autoplay com som imediatamente
+            event.target.playVideo();
+            event.target.unMute();
+
+            // Tentar novamente após delays progressivos
+            setTimeout(() => {
+                event.target.playVideo();
+                event.target.unMute();
+            }, 100);
+            setTimeout(() => {
+                event.target.playVideo();
+                event.target.unMute();
+            }, 500);
+            setTimeout(() => {
+                event.target.playVideo();
+                event.target.unMute();
+            }, 1000);
+            setTimeout(() => {
+                event.target.playVideo();
+                event.target.unMute();
+            }, 2000);
+
+            // Simular interação do usuário para bypassar restrições de autoplay
+            const simulateUserInteraction = () => {
+                const clickEvent = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+                document.dispatchEvent(clickEvent);
+            };
+
+            // Tentar simular interação após um pequeno delay
+            setTimeout(simulateUserInteraction, 50);
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.ENDED) {
+                player.playVideo();
+            }
+        }
+    </script>
+
     <!-- Main App Script -->
+    <script>
+        // Música começa automaticamente quando o player estiver pronto
+        // O autoplay é forçado na função onPlayerReady
+
+        // Tentar autoplay quando o usuário interage com a página
+        document.addEventListener('click', function() {
+            if (typeof player !== 'undefined' && player.playVideo) {
+                player.playVideo();
+                player.unMute();
+            }
+        });
+
+        // Music control setup
+        const musicTitle = document.getElementById('music-title');
+        const musicArtist = document.getElementById('music-artist');
+        const musicToggle = document.getElementById('music-toggle');
+        const musicControl = document.getElementById('music-control');
+
+        // Set music info
+        musicTitle.textContent = '🎵 Jacquees - All On You';
+        musicArtist.textContent = 'Ft. Trey Songz [LEGENDA/TRADUÇÃO]';
+
+        // Music toggle button with fade out effect
+        musicToggle.addEventListener('click', function() {
+            if (typeof player !== 'undefined' && player.pauseVideo) {
+                player.pauseVideo();
+            }
+
+            // Add fade out animation
+            musicControl.style.animation = 'fadeOut 1s ease-out forwards';
+
+            // Remove element after animation
+            setTimeout(() => {
+                musicControl.style.display = 'none';
+            }, 1000);
+        });
+
+        // Garantir que a música continue tocando sempre automaticamente
+        setInterval(function() {
+            if (typeof player !== 'undefined' && player.getPlayerState) {
+                var state = player.getPlayerState();
+                if (state !== YT.PlayerState.PLAYING) {
+                    player.playVideo();
+                    player.unMute();
+                }
+            }
+        }, 1000);
+    </script>
+
     <script type="module">
         // API Client
         const API_BASE_URL = 'https://magnatashost.com/api';
@@ -709,10 +858,9 @@
                             )
                         )
                     )
-                );
-            };
-
-            // Bot Details Component
+            );
+        };
+    // Bot Details Component
             const BotDetails = ({ botId }) => {
                 const [bot, setBot] = React.useState(null);
                 const [loading, setLoading] = React.useState(true);
@@ -954,10 +1102,6 @@
             // Render the app
             const root = ReactDOM.createRoot(document.getElementById('root'));
             root.render(React.createElement(Router));
-        })();
-    </script>
-</body>
-</html>
     </script>
 </body>
 </html>
