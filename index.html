@@ -240,15 +240,42 @@
             progress: 0
         });
 
+        // Update progress bar in real-time
+        setInterval(() => {
+            if (typeof player !== 'undefined' && player.getCurrentTime && player.getDuration) {
+                const currentTime = player.getCurrentTime();
+                const duration = player.getDuration();
+                if (duration > 0) {
+                    const progress = (currentTime / duration) * 100;
+                    const currentFormatted = formatTime(currentTime);
+                    const durationFormatted = formatTime(duration);
+                    updatePlayer({
+                        title: '🎵 Jacquees - All On You',
+                        artist: 'Ft. Trey Songz [LEGENDA/TRADUÇÃO]',
+                        current: currentFormatted,
+                        duration: durationFormatted,
+                        progress: progress
+                    });
+                }
+            }
+        }, 1000);
+
+        // Helper function to format time
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
         // Music toggle button (pause/play)
         musicToggle.addEventListener('click', function() {
-            if (typeof player !== 'undefined' && player.getPlayerState) {
+            if (typeof player !== 'undefined' && player.getPlayerState && player.pauseVideo && player.playVideo) {
                 const state = player.getPlayerState();
                 if (state === YT.PlayerState.PLAYING) {
                     player.pauseVideo();
                     // Change icon to play
                     musicToggle.innerHTML = `
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M8 5v10l8-5-8-5z"/>
                         </svg>
                     `;
@@ -257,7 +284,7 @@
                     player.unMute();
                     // Change icon to pause
                     musicToggle.innerHTML = `
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M6 4h4v12H6V4zM10 4h4v12h-4V4z"/>
                         </svg>
                     `;
@@ -902,8 +929,8 @@
                     )
             );
         };
-    // Bot Details Component
-    const BotDetails = ({ botId }) => {
+        // Bot Details Component
+        const BotDetails = ({ botId }) => {
                 const [bot, setBot] = React.useState(null);
                 const [loading, setLoading] = React.useState(true);
 
