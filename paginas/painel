@@ -1,0 +1,235 @@
+
+import React, { useState } from "react";
+import { botAPI } from "../api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Plus, Bot, AlertCircle, CheckCircle, Circle, Zap, TrendingUp } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import BotCard from "../components/bots/BotCard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { motion } from "framer-motion";
+
+export default function Dashboard() {
+  const queryClient = useQueryClient();
+  const [deleteBot, setDeleteBot] = useState(null);
+
+  const { data: bots, isLoading } = useQuery({
+    queryKey: ['bots'],
+    queryFn: () => botAPI.getBots(),
+    initialData: [],
+    refetchInterval: 5000,
+  });
+
+  const updateBotMutation = useMutation({
+    mutationFn: ({ id, data }) => botAPI.updateBot(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bots'] });
+    },
+  });
+
+  const deleteBotMutation = useMutation({
+    mutationFn: (id) => botAPI.deleteBot(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bots'] });
+      setDeleteBot(null);
+    },
+  });
+
+  const handleStart = async (bot) => {
+    try {
+      await botAPI.startBot(bot.id);
+    } catch (error) {
+      console.error('Erro ao iniciar bot:', error);
+    }
+  };
+
+  const handleStop = async (bot) => {
+    try {
+      await botAPI.stopBot(bot.id);
+    } catch (error) {
+      console.error('Erro ao parar bot:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (deleteBot) {
+      await deleteBotMutation.mutateAsync(deleteBot.id);
+    }
+  };
+
+  const runningBots = bots.filter(b => b.status === "running").length;
+
+  return (
+    <div className="min-h-screen p-6 md:p-12">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6"
+        >
+          <div>
+            <h1 className="text-5xl font-black text-white mb-3">
+              <span className="gradient-text">Dashboard</span>
+            </h1>
+            <p className="text-gray-400 text-lg font-medium">Controle total dos seus bots Discord</p>
+          </div>
+          <Link to={createPageUrl("CreateBot")}>
+            <Button className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 text-white font-bold shadow-2xl glow transition-all duration-300 px-8 py-7 text-base">
+              <Plus className="w-6 h-6 mr-2" />
+              CRIAR NOVO BOT
+            </Button>
+          </Link>
+        </motion.div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="relative glass overflow-hidden border-purple-500/30 shadow-2xl group hover:border-purple-500/60 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500" />
+              <CardHeader className="relative">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-black text-purple-300 uppercase tracking-widest">Total de Bots</p>
+                  <Bot className="w-6 h-6 text-purple-400" />
+                </div>
+                <CardTitle className="text-6xl font-black text-white">{bots.length}</CardTitle>
+                <div className="flex items-center gap-2 mt-3 text-green-400">
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="text-sm font-bold">100% Operacional</span>
+                </div>
+              </CardHeader>
+            </Card>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="relative glass overflow-hidden border-green-500/30 shadow-2xl group hover:border-green-500/60 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500" />
+              <CardHeader className="relative">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-black text-green-300 uppercase tracking-widest">Bots Ativos</p>
+                  <Zap className="w-6 h-6 text-green-400 animate-pulse" />
+                </div>
+                <CardTitle className="text-6xl font-black text-white">{runningBots}</CardTitle>
+                <div className="flex items-center gap-2 mt-3 text-green-400">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-sm font-bold">Online Agora</span>
+                </div>
+              </CardHeader>
+            </Card>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="relative glass overflow-hidden border-pink-500/30 shadow-2xl group hover:border-pink-500/60 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500" />
+              <CardHeader className="relative">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-black text-pink-300 uppercase tracking-widest">Bots Inativos</p>
+                  <Circle className="w-6 h-6 text-pink-400" />
+                </div>
+                <CardTitle className="text-6xl font-black text-white">{bots.length - runningBots}</CardTitle>
+                <div className="flex items-center gap-2 mt-3 text-gray-400">
+                  <Circle className="w-4 h-4" />
+                  <span className="text-sm font-bold">Aguardando</span>
+                </div>
+              </CardHeader>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* The alert mentioning external hosting system is removed */}
+
+        {/* Bots Grid */}
+        {bots.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card className="glass border-white/10 shadow-2xl">
+              <CardContent className="flex flex-col items-center justify-center py-24">
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-3xl flex items-center justify-center mb-8 animate-float">
+                  <Bot className="w-12 h-12 text-purple-400" />
+                </div>
+                <h3 className="text-3xl font-black text-white mb-4">Nenhum bot criado ainda</h3>
+                <p className="text-gray-400 mb-10 text-center max-w-md text-lg">
+                  Comece agora mesmo e crie seu primeiro bot Discord
+                </p>
+                <Link to={createPageUrl("CreateBot")}>
+                  <Button className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 text-white font-bold shadow-2xl glow px-10 py-7 text-lg">
+                    <Plus className="w-6 h-6 mr-3" />
+                    CRIAR PRIMEIRO BOT
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {bots.map((bot, index) => (
+              <motion.div
+                key={bot.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+              >
+                <BotCard
+                  bot={bot}
+                  onStart={handleStart}
+                  onStop={handleStop}
+                  onDelete={(bot) => setDeleteBot(bot)}
+                />
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <AlertDialog open={!!deleteBot} onOpenChange={() => setDeleteBot(null)}>
+        <AlertDialogContent className="glass border-white/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white text-2xl font-black">Confirmar exclusão?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400 text-base">
+              Você está prestes a deletar permanentemente o bot <strong className="text-white">"{deleteBot?.name}"</strong>. 
+              Esta ação é irreversível e todos os dados serão perdidos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="glass border-white/20 hover:bg-white/10 font-bold">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 font-bold"
+            >
+              Sim, Deletar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

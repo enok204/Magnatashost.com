@@ -1,0 +1,225 @@
+import React, { useState } from "react";
+import { botAPI } from "../api";
+import { useMutation } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ArrowLeft, Upload, Bot, FileArchive, Key, Info, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { motion } from "framer-motion";
+
+export default function CreateBot() {
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [token, setToken] = useState("");
+  const [file, setFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const createBotMutation = useMutation({
+    mutationFn: (botData) => botAPI.createBot(botData),
+    onSuccess: () => {
+      navigate(createPageUrl("Dashboard"));
+    },
+  });
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile && selectedFile.name.endsWith('.zip')) {
+      setFile(selectedFile);
+    } else {
+      alert("⚠️ Por favor, selecione apenas arquivos ZIP");
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!name || !token || !file) {
+      alert("⚠️ Preencha todos os campos obrigatórios");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => Math.min(prev + 10, 90));
+    }, 200);
+
+    const { file_url } = await botAPI.uploadFile(file);
+    
+    clearInterval(progressInterval);
+    setUploadProgress(100);
+
+    await createBotMutation.mutateAsync({
+      name,
+      token,
+      zip_file_url: file_url,
+      status: "stopped",
+      logs: `[${new Date().toLocaleString()}] 🎉 Bot criado com sucesso!\n[${new Date().toLocaleString()}] 📦 Arquivo: ${file.name}\n[${new Date().toLocaleString()}] 📊 Tamanho: ${(file.size / 1024 / 1024).toFixed(2)} MB\n[${new Date().toLocaleString()}] ✅ Sistema pronto para iniciar!\n[${new Date().toLocaleString()}] 💡 Clique em "INICIAR BOT" para ligar o bot`,
+    });
+  };
+
+  return (
+    <div className="min-h-screen p-6 md:p-12">
+      <div className="max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <Button
+            variant="outline"
+            onClick={() => navigate(createPageUrl("Dashboard"))}
+            className="mb-10 glass border-white/20 hover:bg-white/10 font-semibold"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar ao Dashboard
+          </Button>
+        </motion.div>
+
+        <motion.div 
+          className="mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <h1 className="text-5xl font-black text-white mb-4">
+            <span className="gradient-text">Criar Novo Bot</span>
+          </h1>
+          <p className="text-gray-400 text-xl font-medium">
+            Configure e hospede seu bot Discord
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="glass border-white/10 shadow-2xl">
+            <CardHeader className="border-b border-white/10 pb-8">
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl glow">
+                  <Bot className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-white text-3xl font-black">Configuração do Bot</CardTitle>
+                  <CardDescription className="text-gray-400 text-base font-medium mt-1">
+                    Upload do arquivo ZIP e configuração
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="pt-10">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="space-y-3">
+                  <Label htmlFor="name" className="text-gray-200 text-lg font-bold">Nome do Bot</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Ex: Meu Bot Incrível"
+                    className="glass border-white/20 text-white h-14 text-lg font-medium focus:border-purple-500 transition-all"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="token" className="text-gray-200 text-lg font-bold flex items-center gap-2">
+                    <Key className="w-5 h-5 text-purple-400" />
+                    Token do Discord Bot
+                  </Label>
+                  <Input
+                    id="token"
+                    type="password"
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    placeholder="Cole seu token aqui"
+                    className="glass border-white/20 text-white h-14 text-base font-mono focus:border-purple-500 transition-all"
+                    required
+                  />
+                  <p className="text-sm text-gray-400 flex items-center gap-2 font-medium">
+                    <Info className="w-4 h-4 text-blue-400" />
+                    Obtenha em <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 hover:underline font-bold">Discord Developer Portal →</a>
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <Label htmlFor="file" className="text-gray-200 text-lg font-bold flex items-center gap-2">
+                    <FileArchive className="w-5 h-5 text-pink-400" />
+                    Arquivo ZIP do Bot
+                  </Label>
+                  <Input
+                    id="file"
+                    type="file"
+                    accept=".zip"
+                    onChange={handleFileChange}
+                    className="glass border-white/20 text-white h-14 text-base file:bg-gradient-to-r file:from-purple-600 file:to-pink-600 file:text-white file:border-0 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:cursor-pointer file:font-bold hover:file:from-purple-700 hover:file:to-pink-700 file:transition-all focus:border-purple-500"
+                    required
+                  />
+                  
+                  {file && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-4 text-base text-green-400 glass border border-green-500/40 p-5 rounded-2xl"
+                    >
+                      <FileArchive className="w-6 h-6 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="font-bold">{file.name}</p>
+                        <p className="text-sm text-gray-400">Tamanho: {(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+
+                {isUploading && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="space-y-4"
+                  >
+                    <div className="flex justify-between text-base font-bold">
+                      <span className="text-purple-300">Fazendo upload...</span>
+                      <span className="text-purple-400">{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full glass rounded-full h-4 overflow-hidden">
+                      <motion.div
+                        className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 h-4 rounded-full shadow-lg glow"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${uploadProgress}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 text-white h-16 text-lg font-black shadow-2xl glow transition-all duration-300"
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                      PROCESSANDO...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-6 h-6 mr-3" />
+                      CRIAR BOT
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
