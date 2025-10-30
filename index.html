@@ -1,1208 +1,322 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Hospedagem de Bots Discord</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        'discord-dark': '#2c2f33',
-                        'discord-darker': '#23272a',
-                        'discord-light': '#99aab5',
-                        'discord-blurple': '#5865f2',
-                        'discord-green': '#57f287',
-                        'discord-yellow': '#fee75c',
-                        'discord-red': '#ed4245',
-                        'discord-pink': '#eb459e',
-                        'discord-purple': '#9c84ef'
-                    }
-                }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sistema de Bots Discord</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'spotify-green': '#1DB954',
+            'spotify-dark': '#121212',
+            'bg-gradient': '#0f0f23',
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'pulse-slow': 'pulse 4s ease-in-out infinite',
+            'gradient': 'gradient 15s ease infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-20px)' }
+            },
+            gradient: {
+              '0%, 100%': { backgroundPosition: '0% 50%' },
+              '50%': { backgroundPosition: '100% 50%' }
             }
+          }
         }
-    </script>
-    <style>
-        .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .glow {
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-        }
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-        @keyframes fadeOut {
-            0% { opacity: 1; transform: translateY(0px) scale(1); }
-            100% { opacity: 0; transform: translateY(-20px) scale(0.8); }
-        }
-    </style>
+      }
+    }
+  </script>
+  <style>
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .progress-fill {
+      background: linear-gradient(90deg, #1DB954, #1ed760);
+      transition: width 0.1s linear;
+    }
+    .volume-fill {
+      background: linear-gradient(90deg, #fff, #b3b3b3);
+      transition: width 0.2s ease;
+    }
+    .hover-glow:hover {
+      box-shadow: 0 0 20px rgba(29, 185, 84, 0.5);
+    }
+    .text-ellipsis {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #particles {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .bg-animated {
+      background: linear-gradient(-45deg, #0f0f23, #1a1a2e, #16213e, #0f3460);
+      background-size: 400% 400%;
+      animation: gradient 20s ease infinite;
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white min-h-screen">
-    <!-- YouTube Background Music Player -->
-    <div id="youtube-player" class="fixed inset-0 w-full h-full opacity-0 pointer-events-none" style="z-index: -1;"></div>
-    <!-- Music Control - Spotify Style -->
-    <div id="music-control" class="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xl border-t border-gray-800 z-50">
-        <div class="flex items-center justify-between px-4 py-3 max-w-screen-xl mx-auto">
-            <!-- Song Info -->
-            <div class="flex items-center gap-3 min-w-0 flex-1 max-w-xs">
-                <div class="album-art w-14 h-14 bg-gray-700 rounded flex-shrink-0 shadow-lg"></div>
-                <div class="info min-w-0 flex-1">
-                    <p class="title text-white font-medium text-sm truncate hover:underline cursor-pointer">—</p>
-                    <p class="artist text-gray-400 text-xs truncate hover:text-white hover:underline cursor-pointer">—</p>
-                </div>
-                <button class="text-gray-400 hover:text-white transition-colors p-1">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
-                    </svg>
-                </button>
-            </div>
+<body class="bg-animated text-white min-h-screen overflow-x-hidden">
 
-            <!-- Player Controls -->
-            <div class="flex flex-col items-center gap-2 flex-1 max-w-md">
-                <div class="flex items-center gap-4">
-                    <button class="control-btn text-gray-400 hover:text-white transition-colors p-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z"/>
-                        </svg>
-                    </button>
-                    <button id="music-toggle" class="control-btn bg-white text-black rounded-full p-2 hover:scale-105 transition-transform">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M6 4h4v12H6V4zM10 4h4v12h-4V4z"/>
-                        </svg>
-                    </button>
-                    <button class="control-btn text-gray-400 hover:text-white transition-colors p-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798l-5.445-3.63z"/>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex items-center gap-2 w-full">
-                    <span class="time text-xs text-gray-400 font-mono w-10 text-right">0:00</span>
-                    <div class="progress-container flex-1 h-1 bg-gray-600 rounded-full cursor-pointer group">
-                        <div class="progress-bar h-full bg-white rounded-full transition-all duration-300 group-hover:bg-green-500" style="width: 0%"></div>
-                    </div>
-                    <span class="time text-xs text-gray-400 font-mono w-10">0:00</span>
-                </div>
-            </div>
+  <!-- Partículas de fundo -->
+  <canvas id="particles"></canvas>
 
-            <!-- Volume & Options -->
-            <div class="flex items-center gap-2 flex-1 justify-end max-w-xs">
-                <button class="text-gray-400 hover:text-white transition-colors p-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"/>
-                    </svg>
-                </button>
-                <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.414 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.414l4.769-3.816a1 1 0 011.2 0zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 9.586a1 1 0 01-2 0 8 8 0 00-2.343-5.657 1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 9.586a1 1 0 01-2 0 4 4 0 00-.636-2.293 1 1 0 010-1.414z" clip-rule="evenodd"/>
-                    </svg>
-                    <div class="volume-container w-20 h-1 bg-gray-600 rounded-full cursor-pointer group">
-                        <div class="volume-bar h-full bg-gray-400 rounded-full transition-all duration-300 group-hover:bg-white" style="width: 70%"></div>
-                    </div>
-                </div>
-                <button class="text-gray-400 hover:text-white transition-colors p-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l3.707 3.707a1 1 0 001.414-1.414L11.414 14H5a1 1 0 01-1-1V5a1 1 0 00-1-1H3zM14 3a1 1 0 00-1 1v8a2 2 0 01-2 2H8.414l-1.293 1.293a1 1 0 01-1.414-1.414L7.586 13H11a1 1 0 001-1V4a1 1 0 001-1h1z" clip-rule="evenodd"/>
-                    </svg>
-                </button>
-            </div>
+  <!-- YouTube Player (invisível) -->
+  <div id="youtube-player" class="fixed inset-0 opacity-0 pointer-events-none"></div>
+
+  <!-- MINI PLAYER SPOTIFY-STYLE -->
+  <div id="music-player" class="fixed bottom-0 left-0 right-0 z-50">
+    <div class="glass border-t border-white/10">
+      <div class="flex items-center justify-between px-3 py-2 max-w-screen-xl mx-auto h-20">
+
+        <!-- LEFT: Song Info -->
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div id="album-art" class="w-14 h-14 bg-gray-700 rounded-lg shadow-lg overflow-hidden border border-white/20">
+            <div class="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800"></div>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p id="song-title" class="text-white font-semibold text-sm text-ellipsis">—</p>
+            <p id="song-artist" class="text-gray-400 text-xs text-ellipsis">—</p>
+          </div>
+          <button id="like-btn" class="text-gray-400 hover:text-white transition p-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+          </button>
         </div>
-    </div>
 
-    <div id="root">
-        <!-- Loading Screen -->
-        <div class="min-h-screen flex items-center justify-center relative">
-            <div class="text-center">
-                <div class="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center mx-auto mb-6 animate-float shadow-2xl glow">
-                    <svg class="w-10 h-10 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </div>
-                <h1 class="text-3xl font-black mb-4 gradient-text">Sistema de Bots Discord</h1>
-                <p class="text-gray-400 text-lg">Carregando interface...</p>
+        <!-- CENTER: Controls + Progress -->
+        <div class="flex flex-col items-center gap-1 flex-1 max-w-md">
+          <div class="flex items-center gap-4">
+            <button id="prev-btn" class="text-gray-300 hover:text-white transition p-1">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z"/>
+              </svg>
+            </button>
+            <button id="play-pause-btn" class="bg-white text-black rounded-full p-2 hover:scale-105 transition transform hover-glow">
+              <svg id="play-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8 5v10l8-5-8-5z"/>
+              </svg>
+              <svg id="pause-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6 4h4v12H6V4zM10 4h4v12h-4V4z"/>
+              </svg>
+            </button>
+            <button id="next-btn" class="text-gray-300 hover:text-white transition p-1">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798l-5.445-3.63z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="flex items-center gap-2 w-full px-2">
+            <span id="current-time" class="text-xs text-gray-400 font-mono w-10 text-right">0:00</span>
+            <div id="progress-container" class="flex-1 h-1 bg-white/20 rounded-full cursor-pointer group relative">
+              <div id="progress-fill" class="progress-fill h-full rounded-full w-0"></div>
+              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                <div class="w-2 h-2 bg-white rounded-full shadow-lg"></div>
+              </div>
             </div>
+            <span id="duration" class="text-xs text-gray-400 font-mono w-10">0:00</span>
+          </div>
         </div>
+
+        <!-- RIGHT: Volume (FUNCIONAL!) -->
+        <div class="flex items-center gap-2 flex-1 justify-end">
+          <button id="volume-btn" class="text-gray-400 hover:text-white transition p-1">
+            <svg id="volume-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.414 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.414l4.769-3.816a1 1 0 011.2 0zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 9.586a1 1 0 01-2 0 8 8 0 00-2.343-5.657 1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 9.586a1 1 0 01-2 0 4 4 0 00-.636-2.293 1 1 0 010-1.414z"/>
+            </svg>
+          </button>
+          <div id="volume-container" class="w-24 h-1 bg-white/20 rounded-full cursor-pointer group relative">
+            <div id="volume-fill" class="volume-fill h-full rounded-full w-full"></div>
+            <div id="volume-thumb" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <!-- React and ReactDOM from CDN -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
-    <!-- React Router -->
-    <script src="https://unpkg.com/react-router-dom@6.8.0/umd/react-router-dom.development.js"></script>
-
-    <!-- Framer Motion -->
-    <script src="https://unpkg.com/framer-motion@10.12.4/dist/framer-motion.js"></script>
-
-    <!-- Date-fns -->
-    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
-
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@0.244.0/dist/umd/lucide.js"></script>
-
-    <!-- TanStack Query -->
-    <script src="https://unpkg.com/@tanstack/react-query@4.29.1/build/umd/index.development.js"></script>
-
-    <!-- YouTube IFrame Player API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
-
-    <!-- YouTube Player Script -->
-    <script>
-        // YouTube Player
-        let player;
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('youtube-player', {
-                height: '100%',
-                width: '100%',
-                videoId: 'aToTwqMDlfU',
-                playerVars: {
-                    'autoplay': 1,
-                    'loop': 1,
-                    'playlist': 'aToTwqMDlfU',
-                    'controls': 0,
-                    'showinfo': 0,
-                    'modestbranding': 1,
-                    'rel': 0,
-                    'mute': 0,
-                    'enablejsapi': 1
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-        }
-
-        function onPlayerReady(event) {
-            // Forçar autoplay com som imediatamente
-            event.target.playVideo();
-            event.target.unMute();
-
-            // Tentar novamente após delays progressivos
-            setTimeout(() => {
-                event.target.playVideo();
-                event.target.unMute();
-            }, 100);
-            setTimeout(() => {
-                event.target.playVideo();
-                event.target.unMute();
-            }, 500);
-            setTimeout(() => {
-                event.target.playVideo();
-                event.target.unMute();
-            }, 1000);
-            setTimeout(() => {
-                event.target.playVideo();
-                event.target.unMute();
-            }, 2000);
-
-            // Simular interação do usuário para bypassar restrições de autoplay
-            const simulateUserInteraction = () => {
-                const clickEvent = new MouseEvent('click', {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true
-                });
-                document.dispatchEvent(clickEvent);
-            };
-
-            // Tentar simular interação após um pequeno delay
-            setTimeout(simulateUserInteraction, 50);
-        }
-
-        function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.ENDED) {
-                player.playVideo();
-            }
-        }
-    </script>
-
-    <!-- Main App Script -->
-    <script>
-        // Música começa automaticamente quando o player estiver pronto
-        // O autoplay é forçado na função onPlayerReady
-
-        // Tentar autoplay quando o usuário interage com a página
-        document.addEventListener('click', function() {
-            if (typeof player !== 'undefined' && player.playVideo) {
-                player.playVideo();
-                player.unMute();
-            }
-        });
-
-        // Music control setup
-        const musicTitle = document.querySelector('.title');
-        const musicArtist = document.querySelector('.artist');
-        const musicTime = document.querySelector('.time');
-        const musicToggle = document.getElementById('music-toggle');
-        const musicControl = document.getElementById('music-control');
-        const progressBar = document.querySelector('.progress-bar');
-
-        // Function to update player info
-        function updatePlayer(data) {
-            musicTitle.textContent = data.title || '—';
-            musicArtist.textContent = data.artist || '—';
-            musicTime.textContent = `${data.current || '0:00'} / ${data.duration || '0:00'}`;
-            progressBar.style.width = (data.progress || 0) + '%';
-        }
-
-        // Set initial music info
-        updatePlayer({
-            title: '🎵 Jacquees - All On You',
-            artist: 'Ft. Trey Songz [LEGENDA/TRADUÇÃO]',
-            current: '0:00',
-            duration: '3:23',
-            progress: 0
-        });
-
-        // Update progress bar in real-time
-        setInterval(() => {
-            if (typeof player !== 'undefined' && player.getCurrentTime && player.getDuration) {
-                const currentTime = player.getCurrentTime();
-                const duration = player.getDuration();
-                if (duration > 0) {
-                    const progress = (currentTime / duration) * 100;
-                    const currentFormatted = formatTime(currentTime);
-                    const durationFormatted = formatTime(duration);
-                    updatePlayer({
-                        title: '🎵 Jacquees - All On You',
-                        artist: 'Ft. Trey Songz [LEGENDA/TRADUÇÃO]',
-                        current: currentFormatted,
-                        duration: durationFormatted,
-                        progress: progress
-                    });
-                }
-            }
-        }, 1000);
-
-        // Helper function to format time
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        // Music toggle button (pause/play)
-        musicToggle.addEventListener('click', function() {
-            if (typeof player !== 'undefined' && player.getPlayerState && player.pauseVideo && player.playVideo) {
-                const state = player.getPlayerState();
-                if (state === YT.PlayerState.PLAYING) {
-                    player.pauseVideo();
-                    // Change icon to play
-                    musicToggle.innerHTML = `
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M8 5v10l8-5-8-5z"/>
-                        </svg>
-                    `;
-                } else {
-                    player.playVideo();
-                    player.unMute();
-                    // Change icon to pause
-                    musicToggle.innerHTML = `
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M6 4h4v12H6V4zM10 4h4v12h-4V4z"/>
-                        </svg>
-                    `;
-                }
-            }
-        });
-
-        // Garantir que a música continue tocando sempre automaticamente
-        setInterval(function() {
-            if (typeof player !== 'undefined' && player.getPlayerState) {
-                var state = player.getPlayerState();
-                if (state !== YT.PlayerState.PLAYING) {
-                    player.playVideo();
-                    player.unMute();
-                }
-            }
-        }, 1000);
-    </script>
-
-    <script type="module">
-        // API Client
-        const API_BASE_URL = 'https://magnatashost.com/api';
-
-        class BotAPI {
-            async uploadFile(file) {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                const response = await fetch(`${API_BASE_URL}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error('Erro ao fazer upload do arquivo');
-                }
-
-                return response.json();
-            }
-
-            async createBot(botData) {
-                const response = await fetch(`${API_BASE_URL}/bots`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(botData)
-                });
-
-                if (!response.ok) {
-                    throw new Error('Erro ao criar bot');
-                }
-
-                return response.json();
-            }
-
-            async getBots() {
-                const response = await fetch(`${API_BASE_URL}/bots`);
-                if (!response.ok) {
-                    throw new Error('Erro ao buscar bots');
-                }
-                return response.json();
-            }
-
-            async getBot(id) {
-                const response = await fetch(`${API_BASE_URL}/bots/${id}`);
-                if (!response.ok) {
-                    throw new Error('Erro ao buscar bot');
-                }
-                return response.json();
-            }
-
-            async updateBot(id, data) {
-                const response = await fetch(`${API_BASE_URL}/bots/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (!response.ok) {
-                    throw new Error('Erro ao atualizar bot');
-                }
-
-                return response.json();
-            }
-
-            async deleteBot(id) {
-                const response = await fetch(`${API_BASE_URL}/bots/${id}`, {
-                    method: 'DELETE'
-                });
-
-                if (!response.ok) {
-                    throw new Error('Erro ao deletar bot');
-                }
-
-                return response.json();
-            }
-
-            async startBot(id) {
-                const response = await fetch(`${API_BASE_URL}/bots/${id}/start`, {
-                    method: 'POST'
-                });
-
-                if (!response.ok) {
-                    throw new Error('Erro ao iniciar bot');
-                }
-
-                return response.json();
-            }
-
-            async stopBot(id) {
-                const response = await fetch(`${API_BASE_URL}/bots/${id}/stop`, {
-                    method: 'POST'
-                });
-
-                if (!response.ok) {
-                    throw new Error('Erro ao parar bot');
-                }
-
-                return response.json();
-            }
-        }
-
-        const botAPI = new BotAPI();
-
-        // Status Badge Component
-        const StatusBadge = ({ status }) => {
-            const statusConfig = {
-                running: {
-                    label: "ONLINE",
-                    color: "bg-green-500/20 text-green-400 border-green-500/50",
-                    dotClass: "bg-green-400 animate-pulse"
-                },
-                stopped: {
-                    label: "OFFLINE",
-                    color: "bg-gray-500/20 text-gray-400 border-gray-500/50",
-                    dotClass: "bg-gray-400"
-                },
-                starting: {
-                    label: "INICIANDO",
-                    color: "bg-blue-500/20 text-blue-400 border-blue-500/50",
-                    dotClass: "bg-blue-400 animate-pulse"
-                },
-                stopping: {
-                    label: "PARANDO",
-                    color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/50",
-                    dotClass: "bg-yellow-400 animate-pulse"
-                },
-                error: {
-                    label: "ERRO",
-                    color: "bg-red-500/20 text-red-400 border-red-500/50",
-                    dotClass: "bg-red-400 animate-pulse"
-                }
-            };
-
-            const config = statusConfig[status] || statusConfig.stopped;
-
-            return React.createElement('div', {
-                className: `${config.color} border-2 flex items-center gap-2 px-4 py-2 font-black tracking-wide text-xs rounded-full`
-            },
-                React.createElement('div', { className: `w-2.5 h-2.5 rounded-full ${config.dotClass}` }),
-                config.label
-            );
-        };
-
-        // Bot Card Component
-        const BotCard = ({ bot, onStart, onStop, onDelete }) => {
-            const formatUptime = (seconds) => {
-                if (!seconds) return "0m";
-                const hours = Math.floor(seconds / 3600);
-                const minutes = Math.floor((seconds % 3600) / 60);
-                return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-            };
-
-            return React.createElement('div', {
-                className: 'relative group'
-            },
-                React.createElement('div', {
-                    className: 'absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl'
-                }),
-                React.createElement('div', {
-                    className: 'absolute -top-24 -right-24 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700'
-                }),
-                bot.status === "running" && React.createElement('div', {
-                    className: 'absolute top-4 right-4'
-                },
-                    React.createElement('div', { className: 'relative w-3 h-3' },
-                        React.createElement('div', { className: 'absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75' }),
-                        React.createElement('div', { className: 'absolute inset-0 bg-green-500 rounded-full' })
-                    )
-                ),
-                React.createElement('div', { className: 'relative glass hover:border-purple-500/50 transition-all duration-500 overflow-hidden group shadow-2xl rounded-2xl' },
-                    React.createElement('div', { className: 'relative pb-4 border-b border-white/10' },
-                        React.createElement('div', { className: 'flex items-center gap-4' },
-                            React.createElement('div', { className: 'relative' },
-                                React.createElement('div', {
-                                    className: 'w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl group-hover:shadow-purple-500/50 transition-shadow duration-300'
-                                },
-                                    React.createElement('svg', { className: 'w-8 h-8 text-white', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { d: 'M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z' })
-                                    )
-                                ),
-                                bot.status === "running" && React.createElement('div', {
-                                    className: 'absolute -bottom-1 -right-1 bg-green-500 px-2 py-0.5 rounded-full text-[10px] font-bold text-white border-2 border-[#14142b]'
-                                }, 'ON')
-                            ),
-                            React.createElement('div', { className: 'flex-1' },
-                                React.createElement('h3', { className: 'text-xl font-black text-white mb-1' }, bot.name),
-                                React.createElement('div', { className: 'flex items-center gap-2 text-xs text-gray-400' },
-                                    React.createElement('svg', { className: 'w-3 h-3', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { 'fill-rule': 'evenodd', d: 'M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z', 'clip-rule': 'evenodd' })
-                                    ),
-                                    new Date(bot.created_date).toLocaleDateString('pt-BR')
-                                )
-                            )
-                        ),
-                        React.createElement('div', { className: 'mt-4' },
-                            React.createElement(StatusBadge, { status: bot.status })
-                        )
-                    ),
-                    React.createElement('div', { className: 'relative pt-5 space-y-4' },
-                        bot.status === "running" && React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
-                            React.createElement('div', { className: 'glass rounded-xl p-3 border border-green-500/30' },
-                                React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
-                                    React.createElement('svg', { className: 'w-4 h-4 text-green-400', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { d: 'M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' })
-                                    ),
-                                    React.createElement('span', { className: 'text-xs text-gray-400 font-semibold' }, 'UPTIME')
-                                ),
-                                React.createElement('p', { className: 'text-lg font-black text-green-400' }, formatUptime(bot.uptime_seconds))
-                            ),
-                            React.createElement('div', { className: 'glass rounded-xl p-3 border border-blue-500/30' },
-                                React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
-                                    React.createElement('svg', { className: 'w-4 h-4 text-blue-400', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { d: 'M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z' })
-                                    ),
-                                    React.createElement('span', { className: 'text-xs text-gray-400 font-semibold' }, 'STATUS')
-                                ),
-                                React.createElement('p', { className: 'text-lg font-black text-blue-400' }, 'ONLINE')
-                            )
-                        ),
-                        bot.error_message && React.createElement('div', { className: 'glass border border-red-500/30 rounded-xl p-3 bg-red-500/5' },
-                            React.createElement('p', { className: 'text-sm text-red-400 font-medium' }, bot.error_message)
-                        ),
-                        React.createElement('div', { className: 'space-y-2 pt-2' },
-                            bot.status === "running" ?
-                                React.createElement('button', {
-                                    onClick: () => onStop(bot),
-                                    className: 'w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-xl hover:shadow-red-500/50 transition-all duration-300 rounded-xl py-3 px-4 flex items-center justify-center gap-2'
-                                },
-                                    React.createElement('svg', { className: 'w-5 h-5 fill-current', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { d: 'M6 4h4v12H6V4zM10 4h4v12h-4V4z' })
-                                    ),
-                                    'PARAR BOT'
-                                ) :
-                                React.createElement('button', {
-                                    onClick: () => onStart(bot),
-                                    className: 'w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 text-white font-bold shadow-xl glow transition-all duration-300 rounded-xl py-3 px-4 flex items-center justify-center gap-2'
-                                },
-                                    React.createElement('svg', { className: 'w-5 h-5 fill-current', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { d: 'M8 5v10l8-5-8-5z' })
-                                    ),
-                                    'INICIAR BOT'
-                                ),
-                            React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
-                                React.createElement('button', {
-                                    onClick: () => window.location.href = `#/bot/${bot.id}`,
-                                    className: 'glass border-white/20 hover:bg-white/10 text-gray-300 font-semibold rounded-xl py-2 px-3 flex items-center justify-center gap-2'
-                                },
-                                    React.createElement('svg', { className: 'w-4 h-4', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { d: 'M10 12a2 2 0 100-4 2 2 0 000 4z' }),
-                                        React.createElement('path', { 'fill-rule': 'evenodd', d: 'M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z', 'clip-rule': 'evenodd' })
-                                    ),
-                                    'Detalhes'
-                                ),
-                                React.createElement('button', {
-                                    onClick: () => onDelete(bot),
-                                    className: 'glass border-red-500/30 hover:bg-red-500/10 text-red-400 font-semibold rounded-xl py-2 px-3 flex items-center justify-center gap-2'
-                                },
-                                    React.createElement('svg', { className: 'w-4 h-4', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { 'fill-rule': 'evenodd', d: 'M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z', 'clip-rule': 'evenodd' })
-                                    ),
-                                    'Deletar'
-                                )
-                            )
-                        )
-                    )
-                )
-            );
-        };
-
-        // Dashboard Component
-        const Dashboard = () => {
-            const [bots, setBots] = React.useState([]);
-            const [loading, setLoading] = React.useState(true);
-
-            React.useEffect(() => {
-                loadBots();
-                const interval = setInterval(loadBots, 5000);
-                return () => clearInterval(interval);
-            }, []);
-
-            const loadBots = async () => {
-                try {
-                    const data = await botAPI.getBots();
-                    setBots(data);
-                } catch (error) {
-                    console.error('Erro ao carregar bots:', error);
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            const handleStart = async (bot) => {
-                try {
-                    await botAPI.startBot(bot.id);
-                    loadBots();
-                } catch (error) {
-                    console.error('Erro ao iniciar bot:', error);
-                }
-            };
-
-            const handleStop = async (bot) => {
-                try {
-                    await botAPI.stopBot(bot.id);
-                    loadBots();
-                } catch (error) {
-                    console.error('Erro ao parar bot:', error);
-                }
-            };
-
-            const handleDelete = async (bot) => {
-                if (confirm(`Tem certeza que deseja deletar o bot "${bot.name}"?`)) {
-                    try {
-                        await botAPI.deleteBot(bot.id);
-                        loadBots();
-                    } catch (error) {
-                        console.error('Erro ao deletar bot:', error);
-                    }
-                }
-            };
-
-            if (loading) {
-                return React.createElement('div', { className: 'min-h-screen flex items-center justify-center' },
-                    React.createElement('div', { className: 'text-center' },
-                        React.createElement('div', { className: 'w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center mx-auto mb-6 animate-float shadow-2xl glow' },
-                            React.createElement('svg', { className: 'w-10 h-10 text-white animate-spin', fill: 'none', viewBox: '0 0 24 24' },
-                                React.createElement('circle', { className: 'opacity-25', cx: '12', cy: '12', r: '10', stroke: 'currentColor', strokeWidth: '4' }),
-                                React.createElement('path', { className: 'opacity-75', fill: 'currentColor', d: 'M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z' })
-                            )
-                        ),
-                        React.createElement('p', { className: 'text-gray-400 text-lg font-medium' }, 'Carregando bots...')
-                    )
-                );
-            }
-
-            return React.createElement('div', { className: 'min-h-screen p-6 md:p-12' },
-                React.createElement('div', { className: 'max-w-7xl mx-auto' },
-                    React.createElement('div', { className: 'flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6' },
-                        React.createElement('div', null,
-                            React.createElement('h1', { className: 'text-5xl font-black text-white mb-3' },
-                                React.createElement('span', { className: 'gradient-text' }, 'Dashboard')
-                            ),
-                            React.createElement('p', { className: 'text-gray-400 text-lg font-medium' }, 'Controle total dos seus bots Discord')
-                        ),
-                        React.createElement('button', {
-                            onClick: () => window.location.href = '#/create',
-                            className: 'bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 text-white font-bold shadow-2xl glow transition-all duration-300 px-8 py-7 text-base rounded-xl flex items-center gap-2'
-                        },
-                            React.createElement('svg', { className: 'w-6 h-6', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                React.createElement('path', { 'fill-rule': 'evenodd', d: 'M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z', 'clip-rule': 'evenodd' })
-                            ),
-                            'CRIAR NOVO BOT'
-                        )
-                    ),
-                    React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-6 mb-12' },
-                        React.createElement('div', { className: 'relative glass overflow-hidden border-purple-500/30 shadow-2xl group hover:border-purple-500/60 transition-all duration-300 rounded-2xl' },
-                            React.createElement('div', { className: 'absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500' }),
-                            React.createElement('div', { className: 'relative p-6' },
-                                React.createElement('div', { className: 'flex items-center justify-between mb-3' },
-                                    React.createElement('p', { className: 'text-xs font-black text-purple-300 uppercase tracking-widest' }, 'Total de Bots'),
-                                    React.createElement('svg', { className: 'w-6 h-6 text-purple-400', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { d: 'M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z' })
-                                    )
-                                ),
-                                React.createElement('div', { className: 'text-6xl font-black text-white mb-3' }, bots.length),
-                                React.createElement('div', { className: 'flex items-center gap-2 text-green-400' },
-                                    React.createElement('svg', { className: 'w-4 h-4', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { 'fill-rule': 'evenodd', d: 'M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z', 'clip-rule': 'evenodd' })
-                                    ),
-                                    React.createElement('span', { className: 'text-sm font-bold' }, '100% Operacional')
-                                )
-                            )
-                        ),
-                        React.createElement('div', { className: 'relative glass overflow-hidden border-green-500/30 shadow-2xl group hover:border-green-500/60 transition-all duration-300 rounded-2xl' },
-                            React.createElement('div', { className: 'absolute top-0 right-0 w-32 h-32 bg-green-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500' }),
-                            React.createElement('div', { className: 'relative p-6' },
-                                React.createElement('div', { className: 'flex items-center justify-between mb-3' },
-                                    React.createElement('p', { className: 'text-xs font-black text-green-300 uppercase tracking-widest' }, 'Bots Ativos'),
-                                    React.createElement('svg', { className: 'w-6 h-6 text-green-400 animate-pulse', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { d: 'M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' })
-                                    )
-                                ),
-                                React.createElement('div', { className: 'text-6xl font-black text-white mb-3' }, bots.filter(b => b.status === 'running').length),
-                                React.createElement('div', { className: 'flex items-center gap-2 text-green-400' },
-                                    React.createElement('svg', { className: 'w-4 h-4', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { 'fill-rule': 'evenodd', d: 'M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z', 'clip-rule': 'evenodd' })
-                                    ),
-                                    React.createElement('span', { className: 'text-sm font-bold' }, 'Online Agora')
-                                )
-                            )
-                        ),
-                        React.createElement('div', { className: 'relative glass overflow-hidden border-pink-500/30 shadow-2xl group hover:border-pink-500/60 transition-all duration-300 rounded-2xl' },
-                            React.createElement('div', { className: 'absolute top-0 right-0 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500' }),
-                            React.createElement('div', { className: 'relative p-6' },
-                                React.createElement('div', { className: 'flex items-center justify-between mb-3' },
-                                    React.createElement('p', { className: 'text-xs font-black text-pink-300 uppercase tracking-widest' }, 'Bots Inativos'),
-                                    React.createElement('svg', { className: 'w-6 h-6 text-pink-400', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { 'fill-rule': 'evenodd', d: 'M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z', 'clip-rule': 'evenodd' })
-                                    )
-                                ),
-                                React.createElement('div', { className: 'text-6xl font-black text-white mb-3' }, bots.filter(b => b.status !== 'running').length),
-                                React.createElement('div', { className: 'flex items-center gap-2 text-gray-400' },
-                                    React.createElement('svg', { className: 'w-4 h-4', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { 'fill-rule': 'evenodd', d: 'M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z', 'clip-rule': 'evenodd' })
-                                    ),
-                                    React.createElement('span', { className: 'text-sm font-bold' }, 'Aguardando')
-                                )
-                            )
-                        )
-                    ),
-                    bots.length === 0 ?
-                        React.createElement('div', { className: 'glass border-white/10 shadow-2xl rounded-2xl' },
-                            React.createElement('div', { className: 'flex flex-col items-center justify-center py-24' },
-                                React.createElement('div', { className: 'w-24 h-24 bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-3xl flex items-center justify-center mb-8 animate-float' },
-                                    React.createElement('svg', { className: 'w-12 h-12 text-purple-400', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { d: 'M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z' })
-                                    )
-                                ),
-                                React.createElement('h3', { className: 'text-3xl font-black text-white mb-4' }, 'Nenhum bot criado ainda'),
-                                React.createElement('p', { className: 'text-gray-400 mb-10 text-center max-w-md text-lg' }, 'Comece agora mesmo e crie seu primeiro bot Discord'),
-                                React.createElement('button', {
-                                    onClick: () => window.location.href = '#/create',
-                                    className: 'bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 text-white font-bold shadow-2xl glow px-10 py-7 text-lg rounded-xl flex items-center gap-2'
-                                },
-                                    React.createElement('svg', { className: 'w-6 h-6', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { 'fill-rule': 'evenodd', d: 'M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z', 'clip-rule': 'evenodd' })
-                                    ),
-                                    'CRIAR PRIMEIRO BOT'
-                                )
-                            )
-                        ) :
-                        React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' },
-                            bots.map((bot, index) =>
-                                React.createElement('div', { key: bot.id },
-                                    React.createElement(BotCard, {
-                                        bot: bot,
-                                        onStart: handleStart,
-                                        onStop: handleStop,
-                                        onDelete: handleDelete
-                                    })
-                                )
-                            )
-                        )
-                )
-            );
-        };
-
-        // Create Bot Component
-        const CreateBot = () => {
-            const [name, setName] = React.useState('');
-            const [token, setToken] = React.useState('');
-            const [file, setFile] = React.useState(null);
-            const [isUploading, setIsUploading] = React.useState(false);
-            const [uploadProgress, setUploadProgress] = React.useState(0);
-
-            const handleFileChange = (e) => {
-                const selectedFile = e.target.files[0];
-                if (selectedFile && selectedFile.name.endsWith('.zip')) {
-                    setFile(selectedFile);
-                } else {
-                    alert("⚠️ Por favor, selecione apenas arquivos ZIP");
-                }
-            };
-
-            const handleSubmit = async (e) => {
-                e.preventDefault();
-
-                if (!name || !token || !file) {
-                    alert("⚠️ Preencha todos os campos obrigatórios");
-                    return;
-                }
-
-                setIsUploading(true);
-                setUploadProgress(0);
-
-                const progressInterval = setInterval(() => {
-                    setUploadProgress(prev => Math.min(prev + 10, 90));
-                }, 200);
-
-                try {
-                    const { file_url } = await botAPI.uploadFile(file);
-
-                    clearInterval(progressInterval);
-                    setUploadProgress(100);
-
-                    await botAPI.createBot({
-                        name,
-                        token,
-                        zip_file_url: file_url,
-                        status: "stopped",
-                        logs: `[${new Date().toLocaleString()}] 🎉 Bot criado com sucesso!\n[${new Date().toLocaleString()}] 📦 Arquivo: ${file.name}\n[${new Date().toLocaleString()}] 📊 Tamanho: ${(file.size / 1024 / 1024).toFixed(2)} MB\n[${new Date().toLocaleString()}] ✅ Sistema pronto para iniciar!\n[${new Date().toLocaleString()}] 💡 Clique em "INICIAR BOT" para ligar o bot`,
-                    });
-
-                    window.location.href = '#/';
-                } catch (error) {
-                    console.error('Erro ao criar bot:', error);
-                    alert('Erro ao criar bot: ' + error.message);
-                } finally {
-                    setIsUploading(false);
-                }
-            };
-
-            return React.createElement('div', { className: 'min-h-screen p-6 md:p-12' },
-                React.createElement('div', { className: 'max-w-4xl mx-auto' },
-                    React.createElement('button', {
-                        onClick: () => window.location.href = '#/',
-                        className: 'mb-10 glass border-white/20 hover:bg-white/10 font-semibold rounded-xl py-3 px-4 flex items-center gap-2'
-                    },
-                        React.createElement('svg', { className: 'w-4 h-4', fill: 'currentColor', viewBox: '0 0 20 20' },
-                            React.createElement('path', { 'fill-rule': 'evenodd', d: 'M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z', 'clip-rule': 'evenodd' })
-                        ),
-                        'Voltar ao Dashboard'
-                    ),
-                    React.createElement('div', { className: 'mb-12' },
-                        React.createElement('h1', { className: 'text-5xl font-black text-white mb-4' },
-                            React.createElement('span', { className: 'gradient-text' }, 'Criar Novo Bot')
-                        ),
-                        React.createElement('p', { className: 'text-gray-400 text-xl font-medium' }, 'Configure e hospede seu bot Discord')
-                    ),
-                    React.createElement('div', { className: 'glass border-white/10 shadow-2xl rounded-2xl' },
-                        React.createElement('div', { className: 'border-b border-white/10 pb-8' },
-                            React.createElement('div', { className: 'flex items-center gap-4 mb-3 p-8 pb-0' },
-                                React.createElement('div', { className: 'w-14 h-14 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl glow' },
-                                    React.createElement('svg', { className: 'w-7 h-7 text-white', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { d: 'M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z' })
-                                    )
-                                ),
-                                React.createElement('div', null,
-                                    React.createElement('h2', { className: 'text-white text-3xl font-black' }, 'Configuração do Bot'),
-                                    React.createElement('p', { className: 'text-gray-400 text-base font-medium mt-1' }, 'Upload do arquivo ZIP e configuração')
-                                )
-                            )
-                        ),
-                        React.createElement('div', { className: 'p-8' },
-                            React.createElement('form', { onSubmit: handleSubmit, className: 'space-y-8' },
-                                React.createElement('div', { className: 'space-y-3' },
-                                    React.createElement('label', { className: 'text-gray-200 text-lg font-bold' }, 'Nome do Bot'),
-                                    React.createElement('input', {
-                                        type: 'text',
-                                        value: name,
-                                        onChange: (e) => setName(e.target.value),
-                                        placeholder: 'Ex: Meu Bot Incrível',
-                                        className: 'glass border-white/20 text-white h-14 text-lg font-medium rounded-xl px-4 w-full focus:border-purple-500 transition-all',
-                                        required: true
-                                    })
-                                ),
-                                React.createElement('div', { className: 'space-y-3' },
-                                    React.createElement('label', { className: 'text-gray-200 text-lg font-bold flex items-center gap-2' },
-                                        React.createElement('svg', { className: 'w-5 h-5 text-purple-400', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                            React.createElement('path', { 'fill-rule': 'evenodd', d: 'M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z', 'clip-rule': 'evenodd' })
-                                        ),
-                                        'Token do Bot (Discord Developer Portal)'
-                                    ),
-                                    React.createElement('input', {
-                                        type: 'password',
-                                        value: token,
-                                        onChange: (e) => setToken(e.target.value),
-                                        placeholder: 'Cole seu token do Discord aqui',
-                                        className: 'glass border-white/20 text-white h-14 text-lg font-medium rounded-xl px-4 w-full focus:border-purple-500 transition-all',
-                                        required: true
-                                    })
-                                ),
-                                React.createElement('div', { className: 'space-y-3' },
-                                    React.createElement('label', { className: 'text-gray-200 text-lg font-bold' }, 'Arquivo ZIP do Bot'),
-                                    React.createElement('div', { className: 'relative' },
-                                        React.createElement('input', {
-                                            type: 'file',
-                                            accept: '.zip',
-                                            onChange: handleFileChange,
-                                            className: 'absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10',
-                                            required: true
-                                        }),
-                                        React.createElement('div', { className: 'glass border-2 border-dashed border-white/30 hover:border-purple-500/50 transition-all rounded-xl p-8 text-center' },
-                                            file ? React.createElement('div', { className: 'space-y-2' },
-                                                React.createElement('svg', { className: 'w-12 h-12 text-green-400 mx-auto', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                                    React.createElement('path', { 'fill-rule': 'evenodd', d: 'M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z', 'clip-rule': 'evenodd' })
-                                                ),
-                                                React.createElement('p', { className: 'text-white font-bold text-lg' }, file.name),
-                                                React.createElement('p', { className: 'text-gray-400' }, `${(file.size / 1024 / 1024).toFixed(2)} MB`)
-                                            ) : React.createElement('div', { className: 'space-y-4' },
-                                                React.createElement('svg', { className: 'w-16 h-16 text-gray-400 mx-auto', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                                    React.createElement('path', { d: 'M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm0 2h12v10H4V5z' }),
-                                                    React.createElement('path', { d: 'M8 7h4v6H8V7z' }),
-                                                    React.createElement('path', { d: 'M6 9h2v2H6V9z' }),
-                                                    React.createElement('path', { d: 'M12 9h2v2h-2V9z' })
-                                                ),
-                                                React.createElement('p', { className: 'text-gray-300 font-bold text-xl' }, 'Clique para selecionar arquivo ZIP'),
-                                                React.createElement('p', { className: 'text-gray-500 text-sm' }, 'Apenas arquivos .zip são aceitos')
-                                            )
-                                        )
-                                    )
-                                ),
-                                isUploading ? React.createElement('div', { className: 'space-y-4' },
-                                    React.createElement('div', { className: 'glass rounded-xl p-6' },
-                                        React.createElement('div', { className: 'flex items-center justify-between mb-4' },
-                                            React.createElement('span', { className: 'text-white font-bold' }, 'Fazendo upload...'),
-                                            React.createElement('span', { className: 'text-purple-400 font-bold' }, `${uploadProgress}%`)
-                                        ),
-                                        React.createElement('div', { className: 'w-full bg-white/10 rounded-full h-3' },
-                                            React.createElement('div', { className: 'bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-300', style: { width: `${uploadProgress}%` } })
-                                        )
-                                    ),
-                                    React.createElement('button', {
-                                        type: 'button',
-                                        disabled: true,
-                                        className: 'w-full bg-gray-600 text-gray-400 font-bold rounded-xl py-4 px-6 cursor-not-allowed'
-                                    }, 'Processando...')
-                                ) : React.createElement('button', {
-                                    type: 'submit',
-                                    className: 'w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 text-white font-bold shadow-2xl glow transition-all duration-300 rounded-xl py-4 px-6 flex items-center justify-center gap-2'
-                                },
-                                    React.createElement('svg', { className: 'w-6 h-6', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                        React.createElement('path', { 'fill-rule': 'evenodd', d: 'M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z', 'clip-rule': 'evenodd' })
-                                    ),
-                                    'CRIAR BOT'
-                                )
-                            )
-                        )
-                    )
-            );
-        };
-        // Bot Details Component
-                const BotDetails = ({ botId }) => {
-                const [bot, setBot] = React.useState(null);
-                const [loading, setLoading] = React.useState(true);
-
-                React.useEffect(() => {
-                    loadBot();
-                    const interval = setInterval(loadBot, 2000);
-                    return () => clearInterval(interval);
-                }, [botId]);
-
-                const loadBot = async () => {
-                    try {
-                        const data = await botAPI.getBot(botId);
-                        setBot(data);
-                    } catch (error) {
-                        console.error('Erro ao carregar bot:', error);
-                    } finally {
-                        setLoading(false);
-                    }
-                };
-
-                const handleStart = async () => {
-                    try {
-                        await botAPI.startBot(botId);
-                        loadBot();
-                    } catch (error) {
-                        console.error('Erro ao iniciar bot:', error);
-                    }
-                };
-
-                const handleStop = async () => {
-                    try {
-                        await botAPI.stopBot(botId);
-                        loadBot();
-                    } catch (error) {
-                        console.error('Erro ao parar bot:', error);
-                    }
-                };
-
-                const handleDelete = async () => {
-                    if (confirm(`Tem certeza que deseja deletar o bot "${bot?.name}"?`)) {
-                        try {
-                            await botAPI.deleteBot(botId);
-                            window.location.href = '#/';
-                        } catch (error) {
-                            console.error('Erro ao deletar bot:', error);
-                        }
-                    }
-                };
-
-                if (loading) {
-                    return React.createElement('div', { className: 'min-h-screen flex items-center justify-center' },
-                        React.createElement('div', { className: 'text-center' },
-                            React.createElement('div', { className: 'w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center mx-auto mb-6 animate-float shadow-2xl glow' },
-                                React.createElement('svg', { className: 'w-10 h-10 text-white animate-spin', fill: 'none', viewBox: '0 0 24 24' },
-                                    React.createElement('circle', { className: 'opacity-25', cx: '12', cy: '12', r: '10', stroke: 'currentColor', strokeWidth: '4' }),
-                                    React.createElement('path', { className: 'opacity-75', fill: 'currentColor', d: 'M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z' })
-                                )
-                            ),
-                            React.createElement('p', { className: 'text-gray-400 text-lg font-medium' }, 'Carregando detalhes do bot...')
-                        )
-                    );
-                }
-
-                if (!bot) {
-                    return React.createElement('div', { className: 'min-h-screen flex items-center justify-center' },
-                        React.createElement('div', { className: 'text-center' },
-                            React.createElement('div', { className: 'w-24 h-24 bg-red-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6' },
-                                React.createElement('svg', { className: 'w-12 h-12 text-red-400', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                    React.createElement('path', { 'fill-rule': 'evenodd', d: 'M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z', 'clip-rule': 'evenodd' })
-                                )
-                            ),
-                            React.createElement('h3', { className: 'text-2xl font-black text-white mb-4' }, 'Bot não encontrado'),
-                            React.createElement('p', { className: 'text-gray-400 mb-6' }, 'O bot que você está procurando não existe ou foi deletado.'),
-                            React.createElement('button', {
-                                onClick: () => window.location.href = '#/',
-                                className: 'bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 text-white font-bold shadow-2xl glow px-8 py-4 rounded-xl'
-                            }, 'Voltar ao Dashboard')
-                        )
-                    );
-                }
-
-                const formatUptime = (seconds) => {
-                    if (!seconds) return "0m";
-                    const hours = Math.floor(seconds / 3600);
-                    const minutes = Math.floor((seconds % 3600) / 60);
-                    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-                };
-
-                return React.createElement('div', { className: 'min-h-screen p-6 md:p-12' },
-                    React.createElement('div', { className: 'max-w-6xl mx-auto' },
-                        React.createElement('button', {
-                            onClick: () => window.location.href = '#/',
-                            className: 'mb-10 glass border-white/20 hover:bg-white/10 font-semibold rounded-xl py-3 px-4 flex items-center gap-2'
-                        },
-                            React.createElement('svg', { className: 'w-4 h-4', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                React.createElement('path', { 'fill-rule': 'evenodd', d: 'M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z', 'clip-rule': 'evenodd' })
-                            ),
-                            'Voltar ao Dashboard'
-                        ),
-                        React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-3 gap-8' },
-                            React.createElement('div', { className: 'lg:col-span-1' },
-                                React.createElement('div', { className: 'glass border-white/10 shadow-2xl rounded-2xl overflow-hidden sticky top-6' },
-                                    React.createElement('div', { className: 'relative pb-6 border-b border-white/10' },
-                                        React.createElement('div', { className: 'flex items-center gap-4 p-6' },
-                                            React.createElement('div', { className: 'relative' },
-                                                React.createElement('div', { className: 'w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center shadow-xl group-hover:shadow-purple-500/50 transition-shadow duration-300' },
-                                                    React.createElement('svg', { className: 'w-10 h-10 text-white', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                                        React.createElement('path', { d: 'M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z' })
-                                                    )
-                                                ),
-                                                bot.status === "running" && React.createElement('div', { className: 'absolute -bottom-1 -right-1 bg-green-500 px-2 py-0.5 rounded-full text-[10px] font-bold text-white border-2 border-[#14142b]' }, 'ON')
-                                            ),
-                                            React.createElement('div', { className: 'flex-1' },
-                                                React.createElement('h2', { className: 'text-2xl font-black text-white mb-1' }, bot.name),
-                                                React.createElement('div', { className: 'flex items-center gap-2 text-xs text-gray-400' },
-                                                    React.createElement('svg', { className: 'w-3 h-3', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                                        React.createElement('path', { 'fill-rule': 'evenodd', d: 'M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z', 'clip-rule': 'evenodd' })
-                                                    ),
-                                                    new Date(bot.created_date).toLocaleDateString('pt-BR')
-                                                )
-                                            )
-                                        ),
-                                        React.createElement('div', { className: 'px-6' },
-                                            React.createElement(StatusBadge, { status: bot.status })
-                                        )
-                                    ),
-                                    React.createElement('div', { className: 'p-6 space-y-4' },
-                                        bot.status === "running" && React.createElement('div', { className: 'grid grid-cols-1 gap-3' },
-                                            React.createElement('div', { className: 'glass rounded-xl p-4 border border-green-500/30' },
-                                                React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
-                                                    React.createElement('svg', { className: 'w-5 h-5 text-green-400', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                                        React.createElement('path', { d: 'M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' })
-                                                    ),
-                                                    React.createElement('span', { className: 'text-sm text-gray-400 font-semibold' }, 'UPTIME')
-                                                ),
-                                                React.createElement('p', { className: 'text-2xl font-black text-green-400' }, formatUptime(bot.uptime_seconds))
-                                            ),
-                                            React.createElement('div', { className: 'glass rounded-xl p-4 border border-blue-500/30' },
-                                                React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
-                                                    React.createElement('svg', { className: 'w-5 h-5 text-blue-400', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                                        React.createElement('path', { d: 'M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z' })
-                                                    ),
-                                                    React.createElement('span', { className: 'text-sm text-gray-400 font-semibold' }, 'STATUS')
-                                                ),
-                                                React.createElement('p', { className: 'text-2xl font-black text-blue-400' }, 'ONLINE')
-                                            )
-                                        ),
-                                        bot.error_message && React.createElement('div', { className: 'glass border border-red-500/30 rounded-xl p-4 bg-red-500/5' },
-                                            React.createElement('p', { className: 'text-sm text-red-400 font-medium' }, bot.error_message)
-                                        ),
-                                        React.createElement('div', { className: 'space-y-3 pt-4' },
-                                            bot.status === "running" ?
-                                                React.createElement('button', {
-                                                    onClick: handleStop,
-                                                    className: 'w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-xl hover:shadow-red-500/50 transition-all duration-300 rounded-xl py-3 px-4 flex items-center justify-center gap-2'
-                                                },
-                                                    React.createElement('svg', { className: 'w-5 h-5 fill-current', viewBox: '0 0 20 20' },
-                                                        React.createElement('path', { d: 'M6 4h4v12H6V4zM10 4h4v12h-4V4z' })
-                                                    ),
-                                                    'PARAR BOT'
-                                                ) :
-                                                React.createElement('button', {
-                                                    onClick: handleStart,
-                                                    className: 'w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 text-white font-bold shadow-xl glow transition-all duration-300 rounded-xl py-3 px-4 flex items-center justify-center gap-2'
-                                                },
-                                                    React.createElement('svg', { className: 'w-5 h-5 fill-current', viewBox: '0 0 20 20' },
-                                                        React.createElement('path', { d: 'M8 5v10l8-5-8-5z' })
-                                                    ),
-                                                    'INICIAR BOT'
-                                                ),
-                                            React.createElement('button', {
-                                                onClick: handleDelete,
-                                                className: 'w-full glass border-red-500/30 hover:bg-red-500/10 text-red-400 font-semibold rounded-xl py-3 px-4 flex items-center justify-center gap-2'
-                                            },
-                                                React.createElement('svg', { className: 'w-5 h-5', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                                    React.createElement('path', { 'fill-rule': 'evenodd', d: 'M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z', 'clip-rule': 'evenodd' })
-                                                ),
-                                                'DELETAR BOT'
-                                            )
-                                        )
-                                    )
-                                )
-                            ),
-                            React.createElement('div', { className: 'lg:col-span-2' },
-                                React.createElement('div', { className: 'glass border-white/10 shadow-2xl rounded-2xl' },
-                                    React.createElement('div', { className: 'border-b border-white/10 pb-6' },
-                                        React.createElement('div', { className: 'flex items-center gap-4 p-8 pb-0' },
-                                            React.createElement('div', { className: 'w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-xl' },
-                                                React.createElement('svg', { className: 'w-6 h-6 text-white', fill: 'currentColor', viewBox: '0 0 20 20' },
-                                                    React.createElement('path', { 'fill-rule': 'evenodd', d: 'M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z', 'clip-rule': 'evenodd' })
-                                                )
-                                            ),
-                                            React.createElement('div', null,
-                                                React.createElement('h3', { className: 'text-white text-2xl font-black' }, 'Logs do Bot'),
-                                                React.createElement('p', { className: 'text-gray-400 text-sm font-medium mt-1' }, 'Monitoramento em tempo real')
-                                            )
-                                        )
-                                    ),
-                                    React.createElement('div', { className: 'p-8' },
-                                        React.createElement('div', { className: 'bg-black/50 rounded-xl p-6 font-mono text-sm max-h-96 overflow-y-auto' },
-                                            bot.logs ? bot.logs.split('\n').map((line, index) =>
-                                                React.createElement('div', { key: index, className: 'text-gray-300 mb-1 leading-relaxed' }, line)
-                                            ) : React.createElement('div', { className: 'text-gray-500 italic' }, 'Nenhum log disponível')
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
-                );
-            };
-
-            // Router Component
-            const Router = () => {
-                const [currentPath, setCurrentPath] = React.useState(window.location.hash.slice(1) || '/');
-
-                React.useEffect(() => {
-                    const handleHashChange = () => {
-                        setCurrentPath(window.location.hash.slice(1) || '/');
-                    };
-
-                    window.addEventListener('hashchange', handleHashChange);
-                    return () => window.removeEventListener('hashchange', handleHashChange);
-                }, []);
-
-                if (currentPath === '/' || currentPath === '') {
-                    return React.createElement(Dashboard);
-                } else if (currentPath === '/create') {
-                    return React.createElement(CreateBot);
-                } else if (currentPath.startsWith('/bot/')) {
-                    const botId = currentPath.split('/bot/')[1];
-                    return React.createElement(BotDetails, { botId: botId });
-                } else {
-                    return React.createElement(Dashboard);
-                }
-            };
-
-            // Render the app
-            const root = ReactDOM.createRoot(document.getElementById('root'));
-            root.render(React.createElement(Router));
-    </script>
+  </div>
+
+  <!-- Conteúdo principal -->
+  <div id="root" class="pb-24 relative z-10">
+    <div class="min-h-screen flex items-center justify-center p-6">
+      <div class="text-center max-w-2xl">
+        <div class="w-24 h-24 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center mx-auto mb-8 animate-float shadow-2xl">
+          <svg class="w-12 h-12 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+          Sistema de Bots
+        </h1>
+        <p class="text-xl text-gray-300 font-medium">Hospedagem profissional para Discord</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    let player;
+    let isPlaying = false;
+    let currentVolume = 70;
+
+    // Partículas de fundo
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    for (let i = 0; i < 80; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 2 + 1,
+        speed: Math.random() * 0.5 + 0.1
+      });
+    }
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        p.y -= p.speed;
+        if (p.y < 0) p.y = canvas.height;
+      });
+      requestAnimationFrame(drawParticles);
+    }
+    drawParticles();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // YouTube Player
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('youtube-player', {
+        height: '0', width: '0',
+        videoId: 'aToTwqMDlfU',
+        playerVars: { autoplay: 1, loop: 1, playlist: 'aToTwqMDlfU', controls: 0, modestbranding: 1, rel: 0 },
+        events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
+      });
+    }
+
+    function onPlayerReady(e) {
+      e.target.setVolume(currentVolume);
+      e.target.playVideo();
+      updateSongInfo();
+      setInterval(updateProgress, 500);
+    }
+
+    function onPlayerStateChange(e) {
+      const playIcon = document.getElementById('play-icon');
+      const pauseIcon = document.getElementById('pause-icon');
+      isPlaying = e.data === YT.PlayerState.PLAYING;
+      playIcon.classList.toggle('hidden', isPlaying);
+      pauseIcon.classList.toggle('hidden', !isPlaying);
+    }
+
+    function updateSongInfo() {
+      document.getElementById('song-title').textContent = 'Jacquees - All On You';
+      document.getElementById('song-artist').textContent = 'Ft. Trey Songz';
+      document.getElementById('album-art').innerHTML = `
+        <img src="https://i.ytimg.com/vi/aToTwqMDlfU/maxresdefault.jpg" class="w-full h-full object-cover rounded-lg">
+      `;
+    }
+
+    function updateProgress() {
+      if (!player || !player.getDuration) return;
+      const current = player.getCurrentTime();
+      const duration = player.getDuration();
+      const progress = (current / duration) * 100;
+
+      document.getElementById('current-time').textContent = formatTime(current);
+      document.getElementById('duration').textContent = formatTime(duration);
+      document.getElementById('progress-fill').style.width = `${progress}%`;
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    // Controles
+    document.getElementById('play-pause-btn').addEventListener('click', () => {
+      isPlaying ? player.pauseVideo() : player.playVideo();
+    });
+
+    // Progresso clicável
+    document.getElementById('progress-container').addEventListener('click', (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percent = x / rect.width;
+      player.seekTo(player.getDuration() * percent);
+    });
+
+    // VOLUME FUNCIONAL (clicável + arrastável)
+    const volumeContainer = document.getElementById('volume-container');
+    const volumeFill = document.getElementById('volume-fill');
+    const volumeThumb = document.getElementById('volume-thumb');
+    let isDragging = false;
+
+    function updateVolume(percent) {
+      currentVolume = percent * 100;
+      player.setVolume(currentVolume);
+      volumeFill.style.width = `${percent * 100}%`;
+      volumeThumb.style.left = `${percent * 100}%`;
+      volumeThumb.style.transform = 'translate(-50%, -50%)';
+    }
+
+    volumeContainer.addEventListener('click', (e) => {
+      const rect = volumeContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percent = Math.max(0, Math.min(1, x / rect.width));
+      updateVolume(percent);
+    });
+
+    // Arrastar volume
+    volumeContainer.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      const rect = volumeContainer.getBoundingClientRect();
+      const moveHandler = (e) => {
+        if (!isDragging) return;
+        const x = e.clientX - rect.left;
+        const percent = Math.max(0, Math.min(1, x / rect.width));
+        updateVolume(percent);
+      };
+      const upHandler = () => {
+        isDragging = false;
+        document.removeEventListener('mousemove', moveHandler);
+        document.removeEventListener('mouseup', upHandler);
+      };
+      document.addEventListener('mousemove', moveHandler);
+      document.addEventListener('mouseup', upHandler);
+    });
+
+    // Inicializa volume
+    updateVolume(currentVolume / 100);
+
+    // Autoplay ao interagir
+    document.addEventListener('click', () => player.playVideo(), { once: true });
+  </script>
 </body>
 </html>
