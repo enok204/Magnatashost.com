@@ -81,19 +81,19 @@
   <!-- MINI PLAYER SPOTIFY-STYLE -->
   <div id="music-player" class="fixed bottom-0 left-0 right-0 z-50">
     <div class="glass border-t border-white/10">
-      <div class="flex items-center justify-between px-3 py-2 max-w-screen-xl mx-auto h-20">
+      <div class="flex items-center justify-between px-2 sm:px-3 py-2 max-w-screen-xl mx-auto h-16 sm:h-20">
 
         <!-- LEFT: Song Info -->
-        <div class="flex items-center gap-3 flex-1 min-w-0">
-          <div id="album-art" class="w-14 h-14 bg-gray-700 rounded-lg shadow-lg overflow-hidden border border-white/20">
+        <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+          <div id="album-art" class="w-12 h-12 sm:w-14 sm:h-14 bg-gray-700 rounded-lg shadow-lg overflow-hidden border border-white/20">
             <div class="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800"></div>
           </div>
           <div class="min-w-0 flex-1">
-            <p id="song-title" class="text-white font-semibold text-sm text-ellipsis">—</p>
+            <p id="song-title" class="text-white font-semibold text-xs sm:text-sm text-ellipsis">—</p>
             <p id="song-artist" class="text-gray-400 text-xs text-ellipsis">—</p>
           </div>
-          <button id="like-btn" class="text-gray-400 hover:text-white transition p-1">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button id="like-btn" class="text-gray-400 hover:text-white transition p-1 touch-manipulation">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
             </svg>
           </button>
@@ -101,46 +101,46 @@
 
         <!-- CENTER: Controls + Progress -->
         <div class="flex flex-col items-center gap-1 flex-1 max-w-md">
-          <div class="flex items-center gap-4">
-            <button id="prev-btn" class="text-gray-300 hover:text-white transition p-1">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <div class="flex items-center gap-2 sm:gap-4">
+            <button id="prev-btn" class="text-gray-300 hover:text-white transition p-1 touch-manipulation">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z"/>
               </svg>
             </button>
-            <button id="play-pause-btn" class="bg-white text-black rounded-full p-2 hover:scale-105 transition transform hover-glow">
-              <svg id="play-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <button id="play-pause-btn" class="bg-white text-black rounded-full p-2 hover:scale-105 transition transform hover-glow touch-manipulation">
+              <svg id="play-icon" class="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M8 5v10l8-5-8-5z"/>
               </svg>
-              <svg id="pause-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+              <svg id="pause-icon" class="w-5 h-5 sm:w-6 sm:h-6 hidden" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M6 4h4v12H6V4zM10 4h4v12h-4V4z"/>
               </svg>
             </button>
-            <button id="next-btn" class="text-gray-300 hover:text-white transition p-1">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <button id="next-btn" class="text-gray-300 hover:text-white transition p-1 touch-manipulation">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798l-5.445-3.63z"/>
               </svg>
             </button>
           </div>
           <div class="flex items-center gap-2 w-full px-2">
-            <span id="current-time" class="text-xs text-gray-400 font-mono w-10 text-right">0:00</span>
-            <div id="progress-container" class="flex-1 h-1 bg-white/20 rounded-full cursor-pointer group relative">
+            <span id="current-time" class="text-xs text-gray-400 font-mono w-8 sm:w-10 text-right">0:00</span>
+            <div id="progress-container" class="flex-1 h-1 bg-white/20 rounded-full cursor-pointer group relative touch-manipulation">
               <div id="progress-fill" class="progress-fill h-full rounded-full w-0"></div>
               <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                 <div class="w-2 h-2 bg-white rounded-full shadow-lg"></div>
               </div>
             </div>
-            <span id="duration" class="text-xs text-gray-400 font-mono w-10">0:00</span>
+            <span id="duration" class="text-xs text-gray-400 font-mono w-8 sm:w-10">0:00</span>
           </div>
         </div>
 
         <!-- RIGHT: Volume (FUNCIONAL!) -->
         <div class="flex items-center gap-2 flex-1 justify-end">
-          <button id="volume-btn" class="text-gray-400 hover:text-white transition p-1">
-            <svg id="volume-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <button id="volume-btn" class="text-gray-400 hover:text-white transition p-1 touch-manipulation">
+            <svg id="volume-icon" class="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.414 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.414l4.769-3.816a1 1 0 011.2 0zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 9.586a1 1 0 01-2 0 8 8 0 00-2.343-5.657 1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 9.586a1 1 0 01-2 0 4 4 0 00-.636-2.293 1 1 0 010-1.414z"/>
             </svg>
           </button>
-          <div id="volume-container" class="w-24 h-1 bg-white/20 rounded-full cursor-pointer group relative">
+          <div id="volume-container" class="w-20 sm:w-24 h-1 bg-white/20 rounded-full cursor-pointer group relative touch-manipulation">
             <div id="volume-fill" class="volume-fill h-full rounded-full w-full"></div>
             <div id="volume-thumb" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </div>
@@ -214,14 +214,13 @@
       player = new YT.Player('youtube-player', {
         height: '0', width: '0',
         videoId: 'aToTwqMDlfU',
-        playerVars: { autoplay: 1, loop: 1, playlist: 'aToTwqMDlfU', controls: 0, modestbranding: 1, rel: 0 },
+        playerVars: { autoplay: 0, loop: 1, playlist: 'aToTwqMDlfU', controls: 0, modestbranding: 1, rel: 0 },
         events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
       });
     }
 
     function onPlayerReady(e) {
       e.target.setVolume(currentVolume);
-      e.target.playVideo();
       updateSongInfo();
       setInterval(updateProgress, 500);
     }
@@ -260,19 +259,48 @@
     }
 
     // Controles
-    document.getElementById('play-pause-btn').addEventListener('click', () => {
-      isPlaying ? player.pauseVideo() : player.playVideo();
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    playPauseBtn.addEventListener('click', () => {
+      if (player) {
+        isPlaying ? player.pauseVideo() : player.playVideo();
+      }
     });
 
-    // Progresso clicável
-    document.getElementById('progress-container').addEventListener('click', (e) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
+    // Suporte a toque para botões
+    playPauseBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (player) {
+        isPlaying ? player.pauseVideo() : player.playVideo();
+      }
+    });
+
+    // Progresso clicável e toque
+    const progressContainer = document.getElementById('progress-container');
+
+    function handleProgressInteraction(clientX) {
+      const rect = progressContainer.getBoundingClientRect();
+      const x = clientX - rect.left;
       const percent = x / rect.width;
-      player.seekTo(player.getDuration() * percent);
+      if (player && player.getDuration) {
+        player.seekTo(player.getDuration() * percent);
+      }
+    }
+
+    progressContainer.addEventListener('click', (e) => {
+      handleProgressInteraction(e.clientX);
     });
 
-    // VOLUME FUNCIONAL (clicável + arrastável)
+    progressContainer.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      handleProgressInteraction(e.touches[0].clientX);
+    });
+
+    progressContainer.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      handleProgressInteraction(e.touches[0].clientX);
+    });
+
+    // VOLUME FUNCIONAL (clicável + arrastável + toque)
     const volumeContainer = document.getElementById('volume-container');
     const volumeFill = document.getElementById('volume-fill');
     const volumeThumb = document.getElementById('volume-thumb');
@@ -280,28 +308,30 @@
 
     function updateVolume(percent) {
       currentVolume = percent * 100;
-      player.setVolume(currentVolume);
+      if (player) player.setVolume(currentVolume);
       volumeFill.style.width = `${percent * 100}%`;
       volumeThumb.style.left = `${percent * 100}%`;
       volumeThumb.style.transform = 'translate(-50%, -50%)';
     }
 
-    volumeContainer.addEventListener('click', (e) => {
+    function handleVolumeInteraction(clientX) {
       const rect = volumeContainer.getBoundingClientRect();
-      const x = e.clientX - rect.left;
+      const x = clientX - rect.left;
       const percent = Math.max(0, Math.min(1, x / rect.width));
       updateVolume(percent);
+    }
+
+    volumeContainer.addEventListener('click', (e) => {
+      handleVolumeInteraction(e.clientX);
     });
 
-    // Arrastar volume
+    // Arrastar volume (mouse)
     volumeContainer.addEventListener('mousedown', (e) => {
       isDragging = true;
       const rect = volumeContainer.getBoundingClientRect();
       const moveHandler = (e) => {
         if (!isDragging) return;
-        const x = e.clientX - rect.left;
-        const percent = Math.max(0, Math.min(1, x / rect.width));
-        updateVolume(percent);
+        handleVolumeInteraction(e.clientX);
       };
       const upHandler = () => {
         isDragging = false;
@@ -312,11 +342,29 @@
       document.addEventListener('mouseup', upHandler);
     });
 
+    // Toque para volume
+    volumeContainer.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      handleVolumeInteraction(e.touches[0].clientX);
+    });
+
+    volumeContainer.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      handleVolumeInteraction(e.touches[0].clientX);
+    });
+
     // Inicializa volume
     updateVolume(currentVolume / 100);
 
-    // Autoplay ao interagir
-    document.addEventListener('click', () => player.playVideo(), { once: true });
+    // Reproduzir ao interagir (mouse e toque)
+    function startPlayback() {
+      if (player && !isPlaying) player.playVideo();
+    }
+
+    document.addEventListener('click', startPlayback, { once: true });
+    document.addEventListener('touchstart', (e) => {
+      startPlayback();
+    }, { once: true, passive: true });
   </script>
 </body>
 </html>
