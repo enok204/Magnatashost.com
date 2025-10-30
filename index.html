@@ -214,7 +214,16 @@
       player = new YT.Player('youtube-player', {
         height: '0', width: '0',
         videoId: 'aToTwqMDlfU',
-        playerVars: { autoplay: 0, loop: 1, playlist: 'aToTwqMDlfU', controls: 0, modestbranding: 1, rel: 0 },
+        playerVars: {
+          autoplay: isWebView ? 1 : 0,
+          loop: 1,
+          playlist: 'aToTwqMDlfU',
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          playsinline: 1,
+          mute: isWebView ? 1 : 0
+        },
         events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
       });
     }
@@ -223,6 +232,23 @@
       e.target.setVolume(currentVolume);
       updateSongInfo();
       setInterval(updateProgress, 500);
+
+      // Para webviews, tentar autoplay após carregamento
+      if (isWebView) {
+        setTimeout(() => {
+          if (player && player.getPlayerState() === YT.PlayerState.UNSTARTED) {
+            player.playVideo();
+          }
+        }, 1000);
+
+        // Desmutar após autoplay forçado
+        setTimeout(() => {
+          if (player) {
+            player.unMute();
+            player.setVolume(currentVolume);
+          }
+        }, 2000);
+      }
     }
 
     function onPlayerStateChange(e) {
@@ -373,13 +399,29 @@
 
     // Reproduzir ao interagir (mouse e toque)
     function startPlayback() {
-      if (player && !isPlaying) player.playVideo();
+      if (player && player.getPlayerState() !== YT.PlayerState.PLAYING) {
+        player.playVideo();
+      }
     }
 
-    document.addEventListener('click', startPlayback, { once: true });
-    document.addEventListener('touchstart', (e) => {
-      startPlayback();
-    }, { once: true, passive: true });
+    // Detectar se está em webview (Instagram, Facebook, etc.)
+    const isWebView = /Instagram|FBAN|FBAV|Messenger|WhatsApp|Twitter|Snapchat/i.test(navigator.userAgent) ||
+                      window.ReactNativeWebView !== undefined ||
+                      window.webkit !== undefined && window.webkit.messageHandlers !== undefined;
+
+    if (isWebView) {
+      // Para webviews, permitir autoplay após primeira interação
+      document.addEventListener('click', startPlayback, { once: true });
+      document.addEventListener('touchstart', (e) => {
+        startPlayback();
+      }, { once: true, passive: true });
+    } else {
+      // Para navegadores normais, manter comportamento atual
+      document.addEventListener('click', startPlayback, { once: true });
+      document.addEventListener('touchstart', (e) => {
+        startPlayback();
+      }, { once: true, passive: true });
+    }
   </script>
 </body>
 </html>
