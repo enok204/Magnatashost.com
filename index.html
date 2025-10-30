@@ -214,10 +214,13 @@
                       window.ReactNativeWebView !== undefined ||
                       window.webkit !== undefined && window.webkit.messageHandlers !== undefined ||
                       !window.chrome || !window.chrome.runtime ||
-                      /Version\/[\d\.]+.*Safari/.test(navigator.userAgent) && !window.chrome;
+                      /Version\/[\d\.]+.*Safari/.test(navigator.userAgent) && !window.chrome ||
+                      /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && window.innerWidth < 768;
 
     // YouTube Player
     function onYouTubeIframeAPIReady() {
+      console.log('YouTube API ready, isWebView:', isWebView);
+
       player = new YT.Player('youtube-player', {
         height: '0', width: '0',
         videoId: 'aToTwqMDlfU',
@@ -229,7 +232,9 @@
           modestbranding: 1,
           rel: 0,
           playsinline: 1,
-          mute: isWebView ? 1 : 0
+          mute: isWebView ? 1 : 0,
+          enablejsapi: 1,
+          origin: window.location.origin
         },
         events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
       });
@@ -242,40 +247,61 @@
 
       // Para webviews, tentar autoplay após carregamento
       if (isWebView) {
-        // Tentar autoplay múltiplas vezes
-        const tryAutoplay = () => {
-          if (player && player.getPlayerState() === YT.PlayerState.UNSTARTED) {
-            player.playVideo();
+        console.log('WebView detectado, tentando autoplay...');
+
+        // Tentar autoplay múltiplas vezes com intervalos maiores
+        const tryAutoplay = (attempt) => {
+          if (player) {
+            try {
+              const state = player.getPlayerState();
+              console.log(`Tentativa ${attempt}, estado:`, state);
+              if (state === YT.PlayerState.UNSTARTED || state === -1) {
+                player.playVideo();
+                console.log(`Autoplay tentativa ${attempt} executada`);
+              }
+            } catch (error) {
+              console.log(`Erro na tentativa ${attempt}:`, error);
+              player.playVideo(); // Fallback
+            }
           }
         };
 
-        setTimeout(tryAutoplay, 500);
-        setTimeout(tryAutoplay, 1000);
-        setTimeout(tryAutoplay, 1500);
+        setTimeout(() => tryAutoplay(1), 1000);
+        setTimeout(() => tryAutoplay(2), 2000);
+        setTimeout(() => tryAutoplay(3), 3000);
 
         // Desmutar após autoplay forçado
         setTimeout(() => {
           if (player) {
-            player.unMute();
-            player.setVolume(currentVolume);
+            try {
+              player.unMute();
+              player.setVolume(currentVolume);
+              console.log('Player desmutado e volume ajustado');
+            } catch (e) {
+              console.log('Erro ao desmutar:', e);
+            }
           }
-        }, 2000);
+        }, 4000);
       }
     }
 
     function onPlayerStateChange(e) {
       const playIcon = document.getElementById('play-icon');
       const pauseIcon = document.getElementById('pause-icon');
-      isPlaying = e.data === YT.PlayerState.PLAYING;
+
+      // Atualizar estado baseado no evento
+      if (e.data === YT.PlayerState.PLAYING) {
+        isPlaying = true;
+      } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
+        isPlaying = false;
+      }
+
+      // Atualizar ícones
       playIcon.classList.toggle('hidden', isPlaying);
       pauseIcon.classList.toggle('hidden', !isPlaying);
 
-      // Forçar atualização do estado para garantir sincronização
-      if (e.data === YT.PlayerState.PLAYING) {
-        isPlaying = true;
-      } else if (e.data === YT.PlayerState.PAUSED) {
-        isPlaying = false;
-      }
+      // Debug para mobile
+      console.log('Player state changed:', e.data, 'isPlaying:', isPlaying);
     }
 
     function updateSongInfo() {
@@ -305,26 +331,32 @@
 
     // Controles
     const playPauseBtn = document.getElementById('play-pause-btn');
-    playPauseBtn.addEventListener('click', () => {
+
+    function togglePlayPause() {
       if (!player) return;
-      const state = player.getPlayerState();
-      if (state === YT.PlayerState.PLAYING) {
-        player.pauseVideo();
-      } else {
-        player.playVideo();
+      try {
+        const state = player.getPlayerState();
+        if (state === YT.PlayerState.PLAYING) {
+          player.pauseVideo();
+        } else {
+          player.playVideo();
+        }
+      } catch (e) {
+        // Fallback para mobile
+        if (isPlaying) {
+          player.pauseVideo();
+        } else {
+          player.playVideo();
+        }
       }
-    });
+    }
+
+    playPauseBtn.addEventListener('click', togglePlayPause);
 
     // Suporte a toque para botões
     playPauseBtn.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      if (!player) return;
-      const state = player.getPlayerState();
-      if (state === YT.PlayerState.PLAYING) {
-        player.pauseVideo();
-      } else {
-        player.playVideo();
-      }
+      togglePlayPause();
     });
 
     // Progresso clicável e toque
@@ -411,8 +443,16 @@
 
     // Reproduzir ao interagir (mouse e toque)
     function startPlayback() {
-      if (player && player.getPlayerState() !== YT.PlayerState.PLAYING) {
-        player.playVideo();
+      if (player) {
+        try {
+          const state = player.getPlayerState();
+          if (state !== YT.PlayerState.PLAYING) {
+            player.playVideo();
+          }
+        } catch (e) {
+          // Fallback para mobile
+          player.playVideo();
+        }
       }
     }
 
