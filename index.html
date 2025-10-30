@@ -57,22 +57,39 @@
     <!-- YouTube Background Music Player -->
     <div id="youtube-player" class="fixed inset-0 w-full h-full opacity-0 pointer-events-none" style="z-index: -1;"></div>
     <!-- Music Control -->
-    <div id="music-control" class="fixed top-4 left-4 glass p-4 rounded-2xl shadow-2xl z-50 animate-float border border-purple-500/30">
-        <div class="text-left flex items-center gap-3">
-            <div class="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/>
-                </svg>
+    <div id="music-control" class="fixed top-4 left-4 w-full max-w-sm glass rounded-2xl shadow-2xl z-50 animate-float border border-purple-500/30 backdrop-blur-xl">
+        <div class="player flex items-center gap-3 p-4">
+            <div class="album-art w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex-shrink-0 shadow-lg"></div>
+            <div class="info flex-1 min-w-0">
+                <p class="title text-white font-bold text-sm truncate">—</p>
+                <p class="artist text-purple-300 text-xs truncate mt-1">—</p>
+                <p class="time text-gray-400 text-xs mt-1">0:00 / 0:00</p>
             </div>
-            <div class="flex-1">
-                <p id="music-title" class="text-white font-black text-sm">🎵 Jacquees - All On You</p>
-                <p id="music-artist" class="text-purple-300 text-xs font-medium">Ft. Trey Songz [LEGENDA/TRADUÇÃO]</p>
+            <div class="controls flex items-center gap-2">
+                <button class="control-btn text-white hover:text-purple-300 transition-colors p-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z"/>
+                    </svg>
+                </button>
+                <button id="music-toggle" class="control-btn bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold p-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all glow">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6 4h4v12H6V4zM10 4h4v12h-4V4z"/>
+                    </svg>
+                </button>
+                <button class="control-btn text-white hover:text-purple-300 transition-colors p-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798l-5.445-3.63z"/>
+                    </svg>
+                </button>
+                <button class="control-btn text-white hover:text-purple-300 transition-colors p-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.414 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.414l4.769-3.816a1 1 0 011.2 0zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 9.586a1 1 0 01-2 0 8 8 0 00-2.343-5.657 1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 9.586a1 1 0 01-2 0 4 4 0 00-.636-2.293 1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
             </div>
-            <button id="music-toggle" class="bg-gradient-to-r from-red-600 to-red-700 text-white font-bold p-2 rounded-lg hover:from-red-700 hover:to-red-800 transition-all glow">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M6 4h4v12H6V4zM10 4h4v12h-4V4z"/>
-                </svg>
-            </button>
+        </div>
+        <div class="progress-container absolute bottom-0 left-0 w-full h-1 bg-white/20 rounded-b-2xl overflow-hidden">
+            <div class="progress-bar h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300" style="width: 0%"></div>
         </div>
     </div>
 
@@ -199,14 +216,29 @@
         });
 
         // Music control setup
-        const musicTitle = document.getElementById('music-title');
-        const musicArtist = document.getElementById('music-artist');
+        const musicTitle = document.querySelector('.title');
+        const musicArtist = document.querySelector('.artist');
+        const musicTime = document.querySelector('.time');
         const musicToggle = document.getElementById('music-toggle');
         const musicControl = document.getElementById('music-control');
+        const progressBar = document.querySelector('.progress-bar');
 
-        // Set music info
-        musicTitle.textContent = '🎵 Jacquees - All On You';
-        musicArtist.textContent = 'Ft. Trey Songz [LEGENDA/TRADUÇÃO]';
+        // Function to update player info
+        function updatePlayer(data) {
+            musicTitle.textContent = data.title || '—';
+            musicArtist.textContent = data.artist || '—';
+            musicTime.textContent = `${data.current || '0:00'} / ${data.duration || '0:00'}`;
+            progressBar.style.width = (data.progress || 0) + '%';
+        }
+
+        // Set initial music info
+        updatePlayer({
+            title: '🎵 Jacquees - All On You',
+            artist: 'Ft. Trey Songz [LEGENDA/TRADUÇÃO]',
+            current: '0:00',
+            duration: '3:23',
+            progress: 0
+        });
 
         // Music toggle button (pause/play)
         musicToggle.addEventListener('click', function() {
@@ -870,8 +902,8 @@
                     )
             );
         };
-        // Bot Details Component
-        const BotDetails = ({ botId }) => {
+    // Bot Details Component
+    const BotDetails = ({ botId }) => {
                 const [bot, setBot] = React.useState(null);
                 const [loading, setLoading] = React.useState(true);
 
