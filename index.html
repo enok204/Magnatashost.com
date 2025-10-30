@@ -231,6 +231,13 @@
       isPlaying = e.data === YT.PlayerState.PLAYING;
       playIcon.classList.toggle('hidden', isPlaying);
       pauseIcon.classList.toggle('hidden', !isPlaying);
+
+      // Forçar atualização do estado para garantir sincronização
+      if (e.data === YT.PlayerState.PLAYING) {
+        isPlaying = true;
+      } else if (e.data === YT.PlayerState.PAUSED) {
+        isPlaying = false;
+      }
     }
 
     function updateSongInfo() {
@@ -261,16 +268,24 @@
     // Controles
     const playPauseBtn = document.getElementById('play-pause-btn');
     playPauseBtn.addEventListener('click', () => {
-      if (player) {
-        isPlaying ? player.pauseVideo() : player.playVideo();
+      if (!player) return;
+      const state = player.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+      } else {
+        player.playVideo();
       }
     });
 
     // Suporte a toque para botões
     playPauseBtn.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      if (player) {
-        isPlaying ? player.pauseVideo() : player.playVideo();
+      if (!player) return;
+      const state = player.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+      } else {
+        player.playVideo();
       }
     });
 
