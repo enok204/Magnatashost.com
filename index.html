@@ -209,6 +209,13 @@
       canvas.height = window.innerHeight;
     });
 
+    // Detectar se está em webview (Instagram, Facebook, etc.)
+    const isWebView = /Instagram|FBAN|FBAV|Messenger|WhatsApp|Twitter|Snapchat/i.test(navigator.userAgent) ||
+                      window.ReactNativeWebView !== undefined ||
+                      window.webkit !== undefined && window.webkit.messageHandlers !== undefined ||
+                      !window.chrome || !window.chrome.runtime ||
+                      /Version\/[\d\.]+.*Safari/.test(navigator.userAgent) && !window.chrome;
+
     // YouTube Player
     function onYouTubeIframeAPIReady() {
       player = new YT.Player('youtube-player', {
@@ -235,11 +242,16 @@
 
       // Para webviews, tentar autoplay após carregamento
       if (isWebView) {
-        setTimeout(() => {
+        // Tentar autoplay múltiplas vezes
+        const tryAutoplay = () => {
           if (player && player.getPlayerState() === YT.PlayerState.UNSTARTED) {
             player.playVideo();
           }
-        }, 1000);
+        };
+
+        setTimeout(tryAutoplay, 500);
+        setTimeout(tryAutoplay, 1000);
+        setTimeout(tryAutoplay, 1500);
 
         // Desmutar após autoplay forçado
         setTimeout(() => {
@@ -404,24 +416,11 @@
       }
     }
 
-    // Detectar se está em webview (Instagram, Facebook, etc.)
-    const isWebView = /Instagram|FBAN|FBAV|Messenger|WhatsApp|Twitter|Snapchat/i.test(navigator.userAgent) ||
-                      window.ReactNativeWebView !== undefined ||
-                      window.webkit !== undefined && window.webkit.messageHandlers !== undefined;
-
-    if (isWebView) {
-      // Para webviews, permitir autoplay após primeira interação
-      document.addEventListener('click', startPlayback, { once: true });
-      document.addEventListener('touchstart', (e) => {
-        startPlayback();
-      }, { once: true, passive: true });
-    } else {
-      // Para navegadores normais, manter comportamento atual
-      document.addEventListener('click', startPlayback, { once: true });
-      document.addEventListener('touchstart', (e) => {
-        startPlayback();
-      }, { once: true, passive: true });
-    }
+    // Para navegadores normais, manter comportamento atual
+    document.addEventListener('click', startPlayback, { once: true });
+    document.addEventListener('touchstart', (e) => {
+      startPlayback();
+    }, { once: true, passive: true });
   </script>
 </body>
 </html>
