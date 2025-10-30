@@ -385,6 +385,5 @@ app.listen(PORT, () => {
     console.log('POST /api/bots/:id/stop');
     console.log('POST /api/upload');
 
-    // Start bot 1 automatically when server starts
-    startBotAutomatically(1);
+    // Bot não será iniciado automaticamente - apenas quando solicitado via API
 });
