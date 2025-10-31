@@ -68,9 +68,62 @@
       background-size: 400% 400%;
       animation: gradient 20s ease infinite;
     }
+
+    /* AVISO SÓ NO INSTAGRAM */
+    #instagram-warning {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      color: white;
+      font-family: system-ui, sans-serif;
+      animation: pulse 2s infinite;
+    }
+    #instagram-warning h1 {
+      font-size: 1.8rem;
+      font-weight: 900;
+      margin-bottom: 1rem;
+      background: linear-gradient(45deg, #ff006e, #8338ec);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    #instagram-warning p {
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.9;
+    }
+    #instagram-warning button {
+      background: white;
+      color: black;
+      font-weight: bold;
+      padding: 1rem 2rem;
+      border-radius: 9999px;
+      font-size: 1.1rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.95; }
+    }
   </style>
 </head>
 <body class="bg-animated text-white min-h-screen overflow-x-hidden">
+
+  <!-- AVISO SÓ NO INSTAGRAM -->
+  <div id="instagram-warning" style="display: none;">
+    <h1>AVISO!</h1>
+    <p>Este site <strong>não funciona perfeitamente no Instagram</strong>.<br>
+       <strong>Abra no Chrome ou Safari</strong> para melhor experiência.</p>
+    <button id="close-warning">Continuar mesmo assim</button>
+  </div>
 
   <!-- Partículas de fundo -->
   <canvas id="particles"></canvas>
@@ -78,7 +131,7 @@
   <!-- YouTube Player (invisível) -->
   <div id="youtube-player" class="fixed inset-0 opacity-0 pointer-events-none"></div>
 
-  <!-- MINI PLAYER SPOTIFY-STYLE -->
+  <!-- MINI PLAYER SPOTIFY-STYLE (100% SEU ORIGINAL) -->
   <div id="music-player" class="fixed bottom-0 left-0 right-0 z-50">
     <div class="glass border-t border-white/10">
       <div class="flex items-center justify-between px-3 py-2 max-w-screen-xl mx-auto h-20">
@@ -137,7 +190,7 @@
         <div class="flex items-center gap-2 flex-1 justify-end">
           <button id="volume-btn" class="text-gray-400 hover:text-white transition p-1">
             <svg id="volume-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.414 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.414l4.769-3.816a1 1 0 011.2 0zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 9.586a1 1 0 01-2 0 8 8 0 00-2.343-5.657 1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 9.586a1 1 0 01-2 0 4 4 0 00-.636-2.293 1 1 0 010-1.414z"/>
+              <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.414 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.414l4.769-3.816a1 1 0 011.2 0zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 9.586a1 1 0 01-2 0 8 8 0 00-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 9.586a1 1 0 01-2 0 4 4 0 00-.636-2.293a1 1 0 010-1.414z"/>
             </svg>
           </button>
           <div id="volume-container" class="w-24 h-1 bg-white/20 rounded-full cursor-pointer group relative">
@@ -173,13 +226,32 @@
     let player;
     let isPlaying = false;
     let currentVolume = 70;
+    let userInteracted = false;
+    let wasPlaying = false;
 
-    // Partículas de fundo
+    // DETECTA INSTAGRAM (iOS + Android)
+    const isInstagram = /Instagram/i.test(navigator.userAgent);
+
+    // MOSTRA AVISO SÓ NO INSTAGRAM
+    if (isInstagram) {
+      const warning = document.getElementById('instagram-warning');
+      warning.style.display = 'flex';
+
+      // Fecha ao tocar no botão ou em qualquer lugar
+      const closeWarning = () => {
+        warning.remove();
+        userInteracted = true;
+        initPlayer();
+      };
+      document.getElementById('close-warning').addEventListener('click', closeWarning);
+      warning.addEventListener('click', closeWarning);
+    }
+
+    // Partículas
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
     const particles = [];
     for (let i = 0; i < 80; i++) {
       particles.push({
@@ -189,7 +261,6 @@
         speed: Math.random() * 0.5 + 0.1
       });
     }
-
     function drawParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
@@ -203,14 +274,24 @@
       requestAnimationFrame(drawParticles);
     }
     drawParticles();
-
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     });
 
-    // YouTube Player
-    function onYouTubeIframeAPIReady() {
+    // ATIVAR COM TOQUE (só se não for Instagram ou após fechar aviso)
+    ['click', 'touchstart'].forEach(ev => {
+      document.body.addEventListener(ev, function activate(e) {
+        if (userInteracted) return;
+        if (isInstagram) return; // já tratado no aviso
+        userInteracted = true;
+        e.preventDefault();
+        initPlayer();
+      }, { once: true, passive: false });
+    });
+
+    function onYouTubeIframeAPIReady() {}
+    function initPlayer() {
       player = new YT.Player('youtube-player', {
         height: '0', width: '0',
         videoId: 'aToTwqMDlfU',
@@ -247,7 +328,6 @@
       const current = player.getCurrentTime();
       const duration = player.getDuration();
       const progress = (current / duration) * 100;
-
       document.getElementById('current-time').textContent = formatTime(current);
       document.getElementById('duration').textContent = formatTime(duration);
       document.getElementById('progress-fill').style.width = `${progress}%`;
@@ -261,24 +341,26 @@
 
     // Controles
     document.getElementById('play-pause-btn').addEventListener('click', () => {
+      if (!player) return;
       isPlaying ? player.pauseVideo() : player.playVideo();
     });
 
-    // Progresso clicável
     document.getElementById('progress-container').addEventListener('click', (e) => {
+      if (!player) return;
       const rect = e.currentTarget.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const percent = x / rect.width;
       player.seekTo(player.getDuration() * percent);
     });
 
-    // VOLUME FUNCIONAL (clicável + arrastável)
+    // VOLUME FUNCIONAL
     const volumeContainer = document.getElementById('volume-container');
     const volumeFill = document.getElementById('volume-fill');
     const volumeThumb = document.getElementById('volume-thumb');
     let isDragging = false;
 
     function updateVolume(percent) {
+      if (!player) return;
       currentVolume = percent * 100;
       player.setVolume(currentVolume);
       volumeFill.style.width = `${percent * 100}%`;
@@ -293,13 +375,17 @@
       updateVolume(percent);
     });
 
-    // Arrastar volume
-    volumeContainer.addEventListener('mousedown', (e) => {
+    volumeContainer.addEventListener('mousedown', startDrag);
+    volumeContainer.addEventListener('touchstart', startDrag, { passive: false });
+
+    function startDrag(e) {
+      if (e.type === 'touchstart') e.preventDefault();
       isDragging = true;
       const rect = volumeContainer.getBoundingClientRect();
       const moveHandler = (e) => {
         if (!isDragging) return;
-        const x = e.clientX - rect.left;
+        const clientX = e.clientX || e.touches[0].clientX;
+        const x = clientX - rect.left;
         const percent = Math.max(0, Math.min(1, x / rect.width));
         updateVolume(percent);
       };
@@ -307,16 +393,26 @@
         isDragging = false;
         document.removeEventListener('mousemove', moveHandler);
         document.removeEventListener('mouseup', upHandler);
+        document.removeEventListener('touchmove', moveHandler);
+        document.removeEventListener('touchend', upHandler);
       };
       document.addEventListener('mousemove', moveHandler);
       document.addEventListener('mouseup', upHandler);
-    });
+      document.addEventListener('touchmove', moveHandler, { passive: false });
+      document.addEventListener('touchend', upHandler);
+    }
 
-    // Inicializa volume
     updateVolume(currentVolume / 100);
 
-    // Autoplay ao interagir
-    document.addEventListener('click', () => player.playVideo(), { once: true });
+    // RESUME AO VOLTAR
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        wasPlaying = isPlaying;
+        if (isPlaying && player) player.pauseVideo();
+      } else if (wasPlaying && userInteracted && player) {
+        player.playVideo();
+      }
+    });
   </script>
 </body>
 </html>
